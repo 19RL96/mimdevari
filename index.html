@@ -29,6 +29,10 @@
         --line: rgba(23, 22, 20, 0.11);
         --line-soft: rgba(23, 22, 20, 0.06);
         --green: #15803d;
+        --amber: #9a5608;
+        --amber-bg: rgba(154, 86, 8, 0.07);
+        --amber-line: rgba(154, 86, 8, 0.24);
+        --amber-body: #6a4a26;
         --red: #b42318;
         --red-bg: rgba(180, 35, 24, 0.06);
         --red-line: rgba(180, 35, 24, 0.24);
@@ -47,6 +51,10 @@
           --line: rgba(242, 239, 233, 0.13);
           --line-soft: rgba(242, 239, 233, 0.07);
           --green: #6fc27f;
+          --amber: #e0a33a;
+          --amber-bg: rgba(224, 163, 58, 0.1);
+          --amber-line: rgba(224, 163, 58, 0.26);
+          --amber-body: #cfc6b4;
           --red: #ff8a80;
           --red-bg: rgba(255, 138, 128, 0.09);
           --red-line: rgba(255, 138, 128, 0.28);
@@ -293,6 +301,31 @@
         font-size: 12.5px;
       }
 
+      /* გაფრთხილება იქვე დგას, სადაც კოპირების ღილაკია — ინსტრუქციებამდე
+         ჩასვლას არავინ დაელოდება, ჯერ ჩასმას ცდის და გაიჭედება. */
+      .note-paste {
+        margin: 10px 0 0;
+        padding: 10px 12px;
+        border: 1px solid var(--amber-line);
+        border-radius: 8px;
+        background: var(--amber-bg);
+        color: var(--amber-body);
+        font-size: 12.5px;
+        line-height: 1.55;
+      }
+
+      .note-paste b {
+        color: var(--amber);
+        font-weight: 650;
+      }
+
+      .note-paste code {
+        border-color: var(--amber-line);
+        background: transparent;
+        color: var(--amber);
+        font-weight: 600;
+      }
+
       /* ---------- steps ---------- */
 
       ol {
@@ -485,6 +518,11 @@
             <h3>კონსოლში ჩასმა</h3>
             <p>დააკოპირეთ კოდი და ჩასვით ბრაუზერის კონსოლში.</p>
             <button class="btn" id="copy" type="button">კოდის კოპირება</button>
+            <p class="note-paste">
+              <b>Chrome და Edge პირველ ჯერზე დაბლოკავს.</b> კონსოლში ხელით
+              აკრიფეთ <code>allow pasting</code>, დააჭირეთ <code>Enter</code>-ს
+              და მერე ჩასვით კოდი. ერთხელ საკმარისია.
+            </p>
             <p class="hint">ერთჯერადი — ყოველ ჯერზე ხელახლა დასჭირდება.</p>
           </div>
 
