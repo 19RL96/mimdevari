@@ -1,0 +1,4 @@
+node_modules/
+.build.tmp.js
+.playwright-mcp/
+.DS_Store

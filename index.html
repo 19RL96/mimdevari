@@ -1,0 +1,534 @@
+<!doctype html>
+<html lang="ka">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>მიმდევარი — ვინ არ არის თქვენი მიმდევარი</title>
+    <meta
+      name="description"
+      content="ინსტაგრამის სკანერი, რომელიც აჩვენებს, ვის მიჰყვებით ცალმხრივად. მუშაობს მხოლოდ თქვენს ბრაუზერში, სერვერის გარეშე."
+    />
+    <meta property="og:title" content="მიმდევარი" />
+    <meta
+      property="og:description"
+      content="ვინ არ არის თქვენი მიმდევარი — ლოკალური სკანერი ინსტაგრამისთვის."
+    />
+    <meta property="og:type" content="website" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23171614'/%3E%3Ccircle cx='16' cy='12.5' r='4.5' fill='%23faf9f7'/%3E%3Cpath d='M7.5 26c0-4.7 3.8-7.5 8.5-7.5s8.5 2.8 8.5 7.5z' fill='%23faf9f7'/%3E%3C/svg%3E"
+    />
+
+    <style>
+      :root {
+        --paper: #faf9f7;
+        --panel: #ffffff;
+        --ink: #171614;
+        --muted: #5f5c55;
+        --faint: #757269;
+        --line: rgba(23, 22, 20, 0.11);
+        --line-soft: rgba(23, 22, 20, 0.06);
+        --green: #15803d;
+        --red: #b42318;
+        --red-bg: rgba(180, 35, 24, 0.06);
+        --red-line: rgba(180, 35, 24, 0.24);
+        --red-body: #6e5a56;
+        --ease: cubic-bezier(0.23, 1, 0.32, 1);
+        --radius: 10px;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --paper: #131311;
+          --panel: #1b1a18;
+          --ink: #f2efe9;
+          --muted: #98948b;
+          --faint: #8d8a82;
+          --line: rgba(242, 239, 233, 0.13);
+          --line-soft: rgba(242, 239, 233, 0.07);
+          --green: #6fc27f;
+          --red: #ff8a80;
+          --red-bg: rgba(255, 138, 128, 0.09);
+          --red-line: rgba(255, 138, 128, 0.28);
+          --red-body: #a8a29a;
+        }
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: "Noto Sans Georgian", "BPG Arial", system-ui, -apple-system,
+          "Segoe UI", sans-serif;
+        font-size: 15px;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .wrap {
+        max-width: 760px;
+        margin: 0 auto;
+        padding: 0 20px;
+      }
+
+      /* ---------- header ---------- */
+
+      header {
+        border-bottom: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        padding: 14px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+
+      .brand span {
+        font-size: 12px;
+        font-weight: 400;
+        color: var(--faint);
+      }
+
+      .author {
+        font-size: 13px;
+        color: var(--muted);
+      }
+
+      .author a {
+        color: var(--ink);
+        font-weight: 600;
+        text-decoration: none;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .author a:hover {
+        border-bottom-color: currentColor;
+      }
+
+      /* ---------- hero ---------- */
+
+      .hero {
+        padding: 56px 0 8px;
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(30px, 6vw, 46px);
+        line-height: 1.14;
+        font-weight: 640;
+        letter-spacing: -0.022em;
+      }
+
+      .lede {
+        margin: 18px 0 0;
+        max-width: 52ch;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.68;
+      }
+
+      /* ---------- notices ---------- */
+
+      .notice {
+        margin: 26px 0 0;
+        padding: 13px 16px;
+        border: 1px solid var(--line-soft);
+        border-left: 2px solid var(--green);
+        border-radius: 0 var(--radius) var(--radius) 0;
+        background: var(--panel);
+        font-size: 14px;
+      }
+
+      .notice b {
+        display: block;
+        margin-bottom: 2px;
+        color: var(--green);
+        font-weight: 650;
+      }
+
+      .notice span {
+        color: var(--muted);
+      }
+
+      .notice.risk {
+        border-color: var(--red-line);
+        border-left-color: var(--red);
+        background: var(--red-bg);
+      }
+
+      .notice.risk b {
+        color: var(--red);
+      }
+
+      .notice.risk span {
+        color: var(--red-body);
+      }
+
+      /* ---------- sections ---------- */
+
+      section {
+        padding: 44px 0 0;
+      }
+
+      h2 {
+        margin: 0 0 6px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--faint);
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 18px;
+      }
+
+      @media (max-width: 620px) {
+        .cards {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .card {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        padding: 20px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        background: var(--panel);
+      }
+
+      .card h3 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 640;
+        letter-spacing: -0.01em;
+      }
+
+      .card p {
+        margin: 0;
+        flex: 1;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+        margin-top: 6px;
+        padding: 11px 16px;
+        border: 1px solid transparent;
+        border-radius: var(--radius);
+        background: var(--ink);
+        color: var(--paper);
+        font: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+        transition: transform 160ms var(--ease), opacity 150ms var(--ease);
+      }
+
+      .btn:active {
+        transform: scale(0.97);
+      }
+
+      .btn.drag {
+        background: var(--panel);
+        border-color: var(--line);
+        color: var(--ink);
+        cursor: grab;
+      }
+
+      .btn.drag:active {
+        cursor: grabbing;
+      }
+
+      @media (hover: hover) and (pointer: fine) {
+        .btn:hover {
+          opacity: 0.88;
+        }
+        .btn.drag:hover {
+          border-color: var(--faint);
+          opacity: 1;
+        }
+      }
+
+      .hint {
+        margin: 8px 0 0;
+        color: var(--faint);
+        font-size: 12.5px;
+      }
+
+      /* ---------- steps ---------- */
+
+      ol {
+        margin: 16px 0 0;
+        padding: 0;
+        list-style: none;
+        counter-reset: step;
+      }
+
+      ol li {
+        position: relative;
+        counter-increment: step;
+        padding: 10px 0 10px 38px;
+        border-bottom: 1px solid var(--line-soft);
+        color: var(--muted);
+      }
+
+      ol li:last-child {
+        border-bottom: 0;
+      }
+
+      ol li::before {
+        content: counter(step);
+        position: absolute;
+        left: 0;
+        top: 10px;
+        display: grid;
+        place-items: center;
+        width: 24px;
+        height: 24px;
+        border: 1px solid var(--line);
+        border-radius: 50%;
+        color: var(--ink);
+        font-size: 12px;
+        font-weight: 650;
+        font-variant-numeric: tabular-nums;
+      }
+
+      ul.feat {
+        margin: 16px 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      ul.feat li {
+        padding: 8px 0 8px 24px;
+        position: relative;
+        border-bottom: 1px solid var(--line-soft);
+        color: var(--muted);
+        font-size: 14.5px;
+      }
+
+      ul.feat li:last-child {
+        border-bottom: 0;
+      }
+
+      ul.feat li::before {
+        content: "—";
+        position: absolute;
+        left: 0;
+        color: var(--faint);
+      }
+
+      code {
+        padding: 2px 6px;
+        border: 1px solid var(--line-soft);
+        border-radius: 5px;
+        background: var(--panel);
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.88em;
+      }
+
+      /* ---------- footer ---------- */
+
+      footer {
+        margin-top: 56px;
+        padding: 24px 0 40px;
+        border-top: 1px solid var(--line);
+        color: var(--faint);
+        font-size: 13px;
+      }
+
+      footer a {
+        color: var(--muted);
+      }
+
+      footer .row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          transition-duration: 0.01ms !important;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header>
+      <div class="wrap bar">
+        <div class="brand">მიმდევარი <span>სკანერი</span></div>
+        <div class="author">
+          ავტორი:
+          <a href="https://www.instagram.com/19rl96/" target="_blank" rel="noopener"
+            >@19rl96</a
+          >
+        </div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <div class="hero">
+        <h1>ვინ არ არის თქვენი მიმდევარი</h1>
+        <p class="lede">
+          ერთი სკრიპტი, რომელიც აჩვენებს, ვის მიჰყვებით ინსტაგრამზე ცალმხრივად.
+          მუშაობს მხოლოდ თქვენს ბრაუზერში — სერვერი არ არსებობს და მონაცემები
+          არსად იგზავნება.
+        </p>
+
+        <div class="notice">
+          <b>მხოლოდ წაკითხვის რეჟიმი</b>
+          <span
+            >სკრიპტი ვერაფერს შეცვლის თქვენს ანგარიშზე. მასობრივი გამოწერის
+            მოხსნა განზრახ ამოღებულია.</span
+          >
+        </div>
+
+        <div class="notice risk">
+          <b>⚠ გამოიყენეთ საკუთარი რისკით</b>
+          <span
+            >სკრიპტი იყენებს ინსტაგრამის შიდა API-ს, რაც ეწინააღმდეგება მისი
+            მოხმარების წესებს. ანგარიშის დროებითი შეზღუდვის რისკი მცირეა, მაგრამ
+            არსებობს.</span
+          >
+        </div>
+      </div>
+
+      <section>
+        <h2>ორი გზა</h2>
+        <div class="cards">
+          <div class="card">
+            <h3>კონსოლში ჩასმა</h3>
+            <p>დააკოპირეთ კოდი და ჩასვით ბრაუზერის კონსოლში.</p>
+            <button class="btn" id="copy" type="button">კოდის კოპირება</button>
+            <p class="hint">ერთჯერადი — ყოველ ჯერზე ხელახლა დასჭირდება.</p>
+          </div>
+
+          <div class="card">
+            <h3>ბუკმარკლეტი</h3>
+            <p>გადმოათრიეთ ღილაკი სანიშნეების ზოლზე.</p>
+            <a class="btn drag" id="bm" href="javascript:(()%3D%3E%7B%22use%20strict%22%3Bconst%20e%3D!0%3D%3D%3Dwindow.__MM_DEMO__%3Bif(!e%26%26%22www.instagram.com%22!%3D%3Dlocation.hostname)return%20void%20alert(%22%E1%83%94%E1%83%A1%20%E1%83%A1%E1%83%99%E1%83%A0%E1%83%98%E1%83%9E%E1%83%A2%E1%83%98%20%E1%83%9B%E1%83%A3%E1%83%A8%E1%83%90%E1%83%9D%E1%83%91%E1%83%A1%20%E1%83%9B%E1%83%AE%E1%83%9D%E1%83%9A%E1%83%9D%E1%83%93%20instagram.com-%E1%83%96%E1%83%94.%22)%3Bif(document.getElementById(%22mm-app%22))return%3Bconst%20t%3D%22mm_protected%22%2Ca%3D%5B%2244884218_345707102882519_2446069589734326272_n%22%2C%22464760996_1254146839119862_3605321457742435801_n%22%5D%2Cr%3D%22%E1%83%9B%E1%83%98%E1%83%9B%E1%83%93%E1%83%94%E1%83%95%E1%83%90%E1%83%A0%E1%83%98%22%2Ci%3D%22%E1%83%A1%E1%83%99%E1%83%90%E1%83%9C%E1%83%94%E1%83%A0%E1%83%98%22%2Cn%3D%22%E1%83%9D%E1%83%A0%E1%83%9B%E1%83%AE%E1%83%A0%E1%83%98%E1%83%95%E1%83%98%22%2Co%3D%22%E1%83%93%E1%83%90%E1%83%AA%E1%83%A3%E1%83%9A%E1%83%94%E1%83%91%E1%83%A8%E1%83%98%20%E1%83%93%E1%83%90%E1%83%9B%E1%83%90%E1%83%A2%E1%83%94%E1%83%91%E1%83%90%22%2Cs%3D%22%E1%83%93%E1%83%90%E1%83%AA%E1%83%A3%E1%83%9A%E1%83%94%E1%83%91%E1%83%98%E1%83%93%E1%83%90%E1%83%9C%20%E1%83%90%E1%83%9B%E1%83%9D%E1%83%A6%E1%83%94%E1%83%91%E1%83%90%22%2Cl%3D%22%E1%83%A1%E1%83%99%E1%83%90%E1%83%9C%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%90%20%E1%83%93%E1%83%90%E1%83%A1%E1%83%A0%E1%83%A3%E1%83%9A%E1%83%93%E1%83%90%22%2Cm%3D%22%E1%83%99%E1%83%9D%E1%83%9E%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%98%E1%83%A1%E1%83%97%E1%83%95%E1%83%98%E1%83%A1%20%E1%83%A1%E1%83%98%E1%83%90%20%E1%83%AA%E1%83%90%E1%83%A0%E1%83%98%E1%83%94%E1%83%9A%E1%83%98%E1%83%90%22%2Cd%3De%3D%3E%60%E1%83%9E%E1%83%90%E1%83%A3%E1%83%96%E1%83%90%20%24%7Be%7D%20%E1%83%AC%E1%83%90%E1%83%9B%E1%83%98%20%E2%80%94%20%E1%83%91%E1%83%9A%E1%83%9D%E1%83%99%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%98%E1%83%A1%20%E1%83%97%E1%83%90%E1%83%95%E1%83%98%E1%83%93%E1%83%90%E1%83%9C%20%E1%83%90%E1%83%A1%E1%83%90%E1%83%AA%E1%83%98%E1%83%9A%E1%83%94%E1%83%91%E1%83%9A%E1%83%90%E1%83%93%60%2Cp%3D%7Bstatus%3A%22initial%22%2Cpercent%3A0%2Cresults%3A%5B%5D%2CprotectedUsers%3Afunction()%7Btry%7Bconst%20e%3DlocalStorage.getItem(t)%3Breturn%20e%3FJSON.parse(e)%3A%5B%5D%7Dcatch%7Breturn%5B%5D%7D%7D()%2Ctab%3A%22list%22%2Cpage%3A1%2Csearch%3A%22%22%2Cpaused%3A!1%2Cerror%3Anull%2Cfilter%3A%7BoneWay%3A!0%2Cmutual%3A!1%2Cverified%3A!0%2Cprivate%3A!0%2CnoPhoto%3A!0%7D%7D%3Bfunction%20c(e)%7Bconst%20t%3D%60%3B%20%24%7Bdocument.cookie%7D%60.split(%60%3B%20%24%7Be%7D%3D%60)%3Breturn%202!%3D%3Dt.length%3Fnull%3At.pop().split(%22%3B%22).shift()%7Dconst%20u%3De%3D%3Enew%20Promise(t%3D%3EsetTimeout(t%2Ce))%2Cf%3D(e%2Ct)%3D%3EMath.floor(Math.random()*(t-e))%2Be%2Cg%3De%3D%3Ep.protectedUsers.some(t%3D%3Et.id%3D%3D%3De.id)%3Bfunction%20x()%7Bconst%20e%3Dp.search.trim().toLowerCase()%3Breturn%20p.results.filter(t%3D%3E%7Bconst%20r%3Dg(t)%3Breturn(%22list%22!%3D%3Dp.tab%7C%7C!r)%26%26(!(%22protected%22%3D%3D%3Dp.tab%26%26!r)%26%26(!(!p.filter.mutual%26%26t.follows_viewer)%26%26(!(!p.filter.oneWay%26%26!t.follows_viewer)%26%26(!(!p.filter.verified%26%26t.is_verified)%26%26(!(!p.filter.private%26%26t.is_private)%26%26(!(!p.filter.noPhoto%26%26(e%3D%3Ea.some(t%3D%3E(e.profile_pic_url%7C%7C%22%22).includes(t)))(t))%26%26!(e%26%26!%60%24%7Bt.username%7D%20%24%7Bt.full_name%7C%7C%22%22%7D%60.toLowerCase().includes(e))))))))%7D)%7Dconst%20h%3De%3D%3E%5B...e%5D.sort((e%2Ct)%3D%3Ee.username.localeCompare(t.username))%2Cb%3D(e%2Ct%3D%7B%7D%2Ca%3D%5B%5D)%3D%3E%7Bconst%20r%3Ddocument.createElement(e)%3Bfor(const%5Be%2Ca%5Dof%20Object.entries(t))%22class%22%3D%3D%3De%3Fr.className%3Da%3A%22text%22%3D%3D%3De%3Fr.textContent%3Da%3A%22html%22%3D%3D%3De%3Fr.innerHTML%3Da%3Ae.startsWith(%22on%22)%3Fr.addEventListener(e.slice(2)%2Ca)%3Anull!%3D%3Da%26%26!1!%3D%3Da%26%26void%200!%3D%3Da%26%26r.setAttribute(e%2C!0%3D%3D%3Da%3F%22%22%3AString(a))%3Bfor(const%20e%20of%5B%5D.concat(a))e%26%26r.appendChild(e)%3Breturn%20r%7D%2Cv%3Db(%22style%22%2C%7Btext%3A'%23mm-app%7B--paper%3A%23faf9f7%3B--panel%3A%23ffffff%3B--ink%3A%23171614%3B--muted%3A%235f5c55%3B--faint%3A%23757269%3B--line%3Argba(23%2C22%2C20%2C0.11)%3B--line-soft%3Argba(23%2C22%2C20%2C0.06)%3B--amber%3A%23a1580b%3B--green%3A%2315803d%3B--blue%3A%231d4ed8%3B--red%3A%23b42318%3B--red-bg%3Argba(180%2C35%2C24%2C0.06)%3B--red-line%3Argba(180%2C35%2C24%2C0.24)%3B--red-body%3A%236e5a56%3B--ease%3Acubic-bezier(0.23%2C1%2C0.32%2C1)%3B--radius%3A10px%3Bposition%3Afixed%3Binset%3A0%3Bz-index%3A2147483000%3Boverflow%3Ahidden%3Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Bbackground%3Avar(--paper)%3Bcolor%3Avar(--ink)%3Bfont-family%3A%22Noto%20Sans%20Georgian%22%2C%22BPG%20Arial%22%2Csystem-ui%2C-apple-system%2C%22Segoe%20UI%22%2Csans-serif%3Bfont-size%3A14px%3Bline-height%3A1.5%3B-webkit-font-smoothing%3Aantialiased%7D%40media%20(prefers-color-scheme%3Adark)%7B%23mm-app%7B--paper%3A%23131311%3B--panel%3A%231b1a18%3B--ink%3A%23f2efe9%3B--muted%3A%2398948b%3B--faint%3A%238d8a82%3B--line%3Argba(242%2C239%2C233%2C0.13)%3B--line-soft%3Argba(242%2C239%2C233%2C0.07)%3B--amber%3A%23e0a33a%3B--green%3A%236fc27f%3B--blue%3A%237aa2f7%3B--red%3A%23ff8a80%3B--red-bg%3Argba(255%2C138%2C128%2C0.09)%3B--red-line%3Argba(255%2C138%2C128%2C0.28)%3B--red-body%3A%23a8a29a%7D%7D%23mm-app%20*%2C%23mm-app%20*%3A%3Abefore%2C%23mm-app%20*%3A%3Aafter%7Bbox-sizing%3Aborder-box%7D%23mm-app%20button%2C%23mm-app%20input%7Bfont%3Ainherit%3Bmargin%3A0%7D%23mm-app%20input%7Bcolor%3Avar(--ink)%7D%23mm-app%20button%7Bcursor%3Apointer%7D.mm-top%7Bposition%3Arelative%3Bflex%3A0%200%20auto%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A14px%3Bheight%3A60px%3Bpadding%3A0%2018px%3Bborder-bottom%3A1px%20solid%20var(--line)%3Bbackground%3Avar(--panel)%7D.mm-brand%7Bdisplay%3Aflex%3Balign-items%3Abaseline%3Bgap%3A8px%3Bflex%3A0%200%20auto%7D.mm-brand%20b%7Bfont-size%3A15px%3Bfont-weight%3A650%3Bletter-spacing%3A-0.01em%7D.mm-brand%20span%7Bfont-size%3A11px%3Bcolor%3Avar(--faint)%7D.mm-readonly%7Bdisplay%3Ainline-flex%3Balign-items%3Acenter%3Bgap%3A5px%3Bpadding%3A3px%208px%3Bborder%3A1px%20solid%20var(--line)%3Bborder-radius%3A999px%3Bfont-size%3A11px%3Bcolor%3Avar(--muted)%3Bwhite-space%3Anowrap%7D.mm-readonly%3A%3Abefore%7Bcontent%3A%22%22%3Bwidth%3A5px%3Bheight%3A5px%3Bborder-radius%3A50%25%3Bbackground%3Avar(--green)%7D.mm-search%7Bflex%3A1%201%20auto%3Bmin-width%3A0%3Bmax-width%3A320px%3Bheight%3A34px%3Bpadding%3A0%2012px%3Bborder%3A1px%20solid%20var(--line)%3Bborder-radius%3Avar(--radius)%3Bbackground%3Avar(--paper)%3Boutline%3Anone%3Btransition%3Aborder-color%20150ms%20var(--ease)%7D.mm-search%3A%3Aplaceholder%7Bcolor%3Avar(--faint)%7D.mm-search%3Afocus%7Bborder-color%3Avar(--ink)%7D.mm-search%3Adisabled%7Bopacity%3A0.4%7D.mm-top-actions%7Bmargin-left%3Aauto%3Bdisplay%3Aflex%3Bgap%3A6px%3Bflex%3A0%200%20auto%7D.mm-btn%7Bdisplay%3Ainline-flex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Bgap%3A6px%3Bheight%3A34px%3Bpadding%3A0%2012px%3Bborder%3A1px%20solid%20var(--line)%3Bborder-radius%3Avar(--radius)%3Bbackground%3Avar(--panel)%3Bcolor%3Avar(--ink)%3Bfont-size%3A13px%3Bfont-weight%3A500%3Bwhite-space%3Anowrap%3Btransition%3Atransform%20160ms%20var(--ease)%2Cborder-color%20150ms%20var(--ease)%2Cbackground-color%20150ms%20var(--ease)%2Copacity%20150ms%20var(--ease)%7D.mm-btn%3Aactive%7Btransform%3Ascale(0.97)%7D.mm-btn%3Adisabled%7Bopacity%3A0.38%3Bcursor%3Anot-allowed%3Btransform%3Anone%7D.mm-btn-primary%7Bborder-color%3Atransparent%3Bbackground%3Avar(--ink)%3Bcolor%3Avar(--paper)%3Bheight%3A40px%3Bpadding%3A0%2020px%3Bfont-size%3A14px%3Bfont-weight%3A600%7D%40media%20(hover%3Ahover)%20and%20(pointer%3Afine)%7B.mm-btn%3Anot(%3Adisabled)%3Ahover%7Bborder-color%3Avar(--faint)%7D.mm-btn-primary%3Anot(%3Adisabled)%3Ahover%7Bborder-color%3Atransparent%3Bopacity%3A0.88%7D%7D.mm-progress%7Bposition%3Aabsolute%3Bleft%3A0%3Bright%3A0%3Bbottom%3A-1px%3Bheight%3A2px%3Boverflow%3Ahidden%3Bpointer-events%3Anone%7D.mm-progress%20i%7Bdisplay%3Ablock%3Bheight%3A100%25%3Bbackground%3Avar(--ink)%3Btransform%3AscaleX(0)%3Btransform-origin%3Aleft%20center%3Btransition%3Atransform%20400ms%20linear%7D.mm-launch%7Bflex%3A1%201%20auto%3Bdisplay%3Agrid%3Bplace-items%3Acenter%3Bpadding%3A24px%3Boverflow-y%3Aauto%7D.mm-launch-inner%7Bwidth%3A100%25%3Bmax-width%3A560px%3Btext-align%3Aleft%7D.mm-eyebrow%7Bdisplay%3Ainline-block%3Bmargin-bottom%3A18px%3Bpadding%3A4px%2010px%3Bborder%3A1px%20solid%20var(--line)%3Bborder-radius%3A999px%3Bfont-size%3A11px%3Bcolor%3Avar(--muted)%7D.mm-launch%20h1%7Bmargin%3A0%3Bfont-size%3Aclamp(28px%2C5vw%2C42px)%3Bline-height%3A1.15%3Bfont-weight%3A640%3Bletter-spacing%3A-0.02em%7D.mm-launch%20p%7Bmargin%3A16px%200%200%3Bmax-width%3A46ch%3Bcolor%3Avar(--muted)%3Bfont-size%3A15px%3Bline-height%3A1.65%7D.mm-safety%7Bdisplay%3Aflex%3Bgap%3A10px%3Bmargin%3A22px%200%200%3Bpadding%3A12px%2014px%3Bborder%3A1px%20solid%20var(--line-soft)%3Bborder-left%3A2px%20solid%20var(--green)%3Bborder-radius%3A0%20var(--radius)%20var(--radius)%200%3Bbackground%3Avar(--panel)%3Bcolor%3Avar(--muted)%3Bfont-size%3A13px%3Bline-height%3A1.55%7D.mm-risk%7Bmargin%3A10px%200%200%3Bpadding%3A12px%2014px%3Bborder%3A1px%20solid%20var(--red-line)%3Bborder-left%3A2px%20solid%20var(--red)%3Bborder-radius%3A0%20var(--radius)%20var(--radius)%200%3Bbackground%3Avar(--red-bg)%3Bfont-size%3A13px%3Bline-height%3A1.55%7D.mm-risk%20b%7Bdisplay%3Ablock%3Bmargin-bottom%3A3px%3Bcolor%3Avar(--red)%3Bfont-weight%3A650%3Bletter-spacing%3A-0.005em%7D.mm-risk%20span%7Bcolor%3Avar(--red-body)%7D.mm-launch-actions%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A14px%3Bmargin-top%3A26px%3Bflex-wrap%3Awrap%7D.mm-launch-note%7Bcolor%3Avar(--faint)%3Bfont-size%3A12px%7D.mm-body%7Bflex%3A1%201%20auto%3Bdisplay%3Agrid%3Bgrid-template-columns%3A236px%20minmax(0%2C1fr)%3Bmin-height%3A0%7D.mm-side%7Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Bgap%3A20px%3Bpadding%3A18px%2016px%3Bborder-right%3A1px%20solid%20var(--line)%3Bbackground%3Avar(--panel)%3Boverflow-y%3Aauto%7D.mm-side%20h3%7Bmargin%3A0%200%2010px%3Bfont-size%3A11px%3Bfont-weight%3A600%3Bletter-spacing%3A0.06em%3Btext-transform%3Auppercase%3Bcolor%3Avar(--faint)%7D.mm-check%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A9px%3Bpadding%3A5px%200%3Bfont-size%3A13px%3Bcursor%3Apointer%3Buser-select%3Anone%7D.mm-check%20input%7Bwidth%3A15px%3Bheight%3A15px%3Baccent-color%3Avar(--ink)%3Bcursor%3Apointer%7D.mm-stat%7Bdisplay%3Aflex%3Balign-items%3Abaseline%3Bjustify-content%3Aspace-between%3Bgap%3A10px%3Bpadding%3A6px%200%3Bborder-bottom%3A1px%20solid%20var(--line-soft)%3Bfont-size%3A13px%7D.mm-stat%3Alast-child%7Bborder-bottom%3A0%7D.mm-stat%20span%7Bcolor%3Avar(--muted)%7D.mm-stat%20b%7Bfont-weight%3A600%3Bfont-variant-numeric%3Atabular-nums%7D.mm-side-foot%7Bmargin-top%3Aauto%3Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Bgap%3A10px%7D.mm-pager%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bjustify-content%3Aspace-between%3Bgap%3A6px%3Bpadding%3A4px%206px%3Bborder%3A1px%20solid%20var(--line)%3Bborder-radius%3Avar(--radius)%7D.mm-pager%20b%7Bfont-size%3A12px%3Bfont-weight%3A500%3Bfont-variant-numeric%3Atabular-nums%3Bcolor%3Avar(--muted)%7D.mm-pager%20button%7Bwidth%3A26px%3Bheight%3A26px%3Bborder%3A0%3Bborder-radius%3A6px%3Bbackground%3Atransparent%3Bcolor%3Avar(--muted)%3Bline-height%3A1%3Btransition%3Atransform%20160ms%20var(--ease)%2Ccolor%20150ms%20var(--ease)%7D.mm-pager%20button%3Aactive%7Btransform%3Ascale(0.9)%7D.mm-pager%20button%3Adisabled%7Bopacity%3A0.3%3Bcursor%3Anot-allowed%3Btransform%3Anone%7D%40media%20(hover%3Ahover)%20and%20(pointer%3Afine)%7B.mm-pager%20button%3Anot(%3Adisabled)%3Ahover%7Bcolor%3Avar(--ink)%7D%7D.mm-main%7Bdisplay%3Aflex%3Bflex-direction%3Acolumn%3Bmin-width%3A0%3Bmin-height%3A0%7D.mm-tabs%7Bflex%3A0%200%20auto%3Bdisplay%3Aflex%3Bgap%3A2px%3Bpadding%3A10px%2016px%200%3Bborder-bottom%3A1px%20solid%20var(--line)%7D.mm-tab%7Bposition%3Arelative%3Bpadding%3A8px%2012px%2012px%3Bborder%3A0%3Bbackground%3Atransparent%3Bcolor%3Avar(--muted)%3Bfont-size%3A13px%3Bfont-weight%3A500%3Btransition%3Acolor%20150ms%20var(--ease)%7D.mm-tab%3A%3Aafter%7Bcontent%3A%22%22%3Bposition%3Aabsolute%3Bleft%3A12px%3Bright%3A12px%3Bbottom%3A-1px%3Bheight%3A2px%3Bbackground%3Avar(--ink)%3Btransform%3AscaleX(0)%3Btransform-origin%3Acenter%3Btransition%3Atransform%20200ms%20var(--ease)%7D.mm-tab%5Baria-selected%3D%22true%22%5D%7Bcolor%3Avar(--ink)%7D.mm-tab%5Baria-selected%3D%22true%22%5D%3A%3Aafter%7Btransform%3AscaleX(1)%7D%40media%20(hover%3Ahover)%20and%20(pointer%3Afine)%7B.mm-tab%3Ahover%7Bcolor%3Avar(--ink)%7D%7D.mm-list%7Bflex%3A1%201%20auto%3Boverflow-y%3Aauto%3Bpadding%3A8px%2016px%2024px%7D.mm-row%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A12px%3Bpadding%3A10px%208px%3Bborder-radius%3Avar(--radius)%3Bborder-bottom%3A1px%20solid%20var(--line-soft)%7D.mm-row%3Alast-child%7Bborder-bottom%3A0%7D.mm-row.mm-in%7Bopacity%3A0%3Btransform%3AtranslateY(6px)%3Banimation%3Amm-rise%20260ms%20var(--ease)%20forwards%3Banimation-delay%3Acalc(var(--i%2C0)%20*%2032ms)%7D%40keyframes%20mm-rise%7Bto%7Bopacity%3A1%3Btransform%3AtranslateY(0)%7D%7D.mm-avatar%7Bflex%3A0%200%20auto%3Bwidth%3A42px%3Bheight%3A42px%3Bborder-radius%3A50%25%3Bborder%3A1px%20solid%20var(--line-soft)%3Bobject-fit%3Acover%3Bbackground%3Avar(--paper)%7D.mm-id%7Bmin-width%3A0%3Bflex%3A1%201%20auto%7D.mm-id%20a%7Bdisplay%3Ainline-block%3Bmax-width%3A100%25%3Boverflow%3Ahidden%3Btext-overflow%3Aellipsis%3Bwhite-space%3Anowrap%3Bcolor%3Avar(--ink)%3Bfont-weight%3A600%3Bfont-size%3A14px%3Btext-decoration%3Anone%3Bvertical-align%3Amiddle%7D%40media%20(hover%3Ahover)%20and%20(pointer%3Afine)%7B.mm-id%20a%3Ahover%7Btext-decoration%3Aunderline%7D%7D.mm-id%20p%7Bmargin%3A1px%200%200%3Boverflow%3Ahidden%3Btext-overflow%3Aellipsis%3Bwhite-space%3Anowrap%3Bcolor%3Avar(--muted)%3Bfont-size%3A12.5px%7D.mm-tags%7Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A6px%3Bflex%3A0%200%20auto%7D.mm-tag%7Bpadding%3A2px%208px%3Bborder%3A1px%20solid%20currentColor%3Bborder-radius%3A999px%3Bfont-size%3A11px%3Bfont-weight%3A500%3Bwhite-space%3Anowrap%7D.mm-tag-private%7Bcolor%3Avar(--amber)%7D.mm-tag-mutual%7Bcolor%3Avar(--green)%7D.mm-verified%7Bdisplay%3Ainline-flex%3Balign-items%3Acenter%3Bjustify-content%3Acenter%3Bwidth%3A16px%3Bheight%3A16px%3Bborder-radius%3A50%25%3Bbackground%3Avar(--blue)%3Bcolor%3A%23fff%3Bfont-size%3A10px%3Bline-height%3A1%3Bvertical-align%3Amiddle%3Bmargin-left%3A5px%7D.mm-star%7Bflex%3A0%200%20auto%3Bwidth%3A32px%3Bheight%3A32px%3Bborder%3A0%3Bborder-radius%3A8px%3Bbackground%3Atransparent%3Bcolor%3Avar(--faint)%3Bfont-size%3A15px%3Bline-height%3A1%3Btransition%3Atransform%20160ms%20var(--ease)%2Ccolor%20150ms%20var(--ease)%7D.mm-star%3Aactive%7Btransform%3Ascale(0.88)%7D.mm-star%5Bdata-on%3D%221%22%5D%7Bcolor%3Avar(--amber)%7D%40media%20(hover%3Ahover)%20and%20(pointer%3Afine)%7B.mm-star%3Ahover%7Bcolor%3Avar(--ink)%7D.mm-star%5Bdata-on%3D%221%22%5D%3Ahover%7Bcolor%3Avar(--amber)%7D%7D.mm-empty%7Bpadding%3A48px%208px%3Btext-align%3Acenter%3Bcolor%3Avar(--faint)%3Bfont-size%3A13px%7D.mm-error%7Bmargin%3A16px%3Bpadding%3A14px%2016px%3Bborder%3A1px%20solid%20var(--line)%3Bborder-left%3A2px%20solid%20var(--amber)%3Bborder-radius%3A0%20var(--radius)%20var(--radius)%200%3Bbackground%3Avar(--panel)%3Bfont-size%3A13px%3Bline-height%3A1.6%7D.mm-error%20b%7Bdisplay%3Ablock%3Bmargin-bottom%3A3px%7D.mm-error%20span%7Bcolor%3Avar(--muted)%7D.mm-toast%7Bposition%3Afixed%3Bleft%3A50%25%3Bbottom%3A22px%3Bz-index%3A2147483001%3Bdisplay%3Aflex%3Balign-items%3Acenter%3Bgap%3A10px%3Bmax-width%3Amin(420px%2Ccalc(100vw%20-%2032px))%3Bpadding%3A11px%2015px%3Bborder%3A1px%20solid%20var(--line)%3Bborder-radius%3A12px%3Bbackground%3Avar(--panel)%3Bcolor%3Avar(--ink)%3Bfont-size%3A13px%3Bbox-shadow%3A0%2010px%2034px%20rgba(0%2C0%2C0%2C0.14)%3Bopacity%3A1%3Btransform%3Atranslate(-50%25%2C0)%3Btransition%3Aopacity%20220ms%20var(--ease)%2Ctransform%20220ms%20var(--ease)%7D.mm-toast%5Bdata-hidden%3D%221%22%5D%7Bopacity%3A0%3Btransform%3Atranslate(-50%25%2C12px)%3Bpointer-events%3Anone%7D.mm-close%7Bflex%3A0%200%20auto%3Bwidth%3A34px%3Bheight%3A34px%3Bborder%3A1px%20solid%20var(--line)%3Bborder-radius%3Avar(--radius)%3Bbackground%3Avar(--panel)%3Bcolor%3Avar(--muted)%3Bfont-size%3A16px%3Bline-height%3A1%3Btransition%3Atransform%20160ms%20var(--ease)%2Ccolor%20150ms%20var(--ease)%7D.mm-close%3Aactive%7Btransform%3Ascale(0.94)%7D%40media%20(hover%3Ahover)%20and%20(pointer%3Afine)%7B.mm-close%3Ahover%7Bcolor%3Avar(--ink)%7D%7D%40media%20(max-width%3A760px)%7B.mm-body%7Bgrid-template-columns%3A1fr%7D.mm-side%7Bflex-direction%3Arow%3Bflex-wrap%3Awrap%3Bgap%3A14px%2022px%3Bborder-right%3A0%3Bborder-bottom%3A1px%20solid%20var(--line)%3Boverflow%3Avisible%7D.mm-side-foot%7Bmargin-top%3A0%3Bwidth%3A100%25%3Bflex-direction%3Arow%7D.mm-side-foot%20.mm-btn%7Bflex%3A1%7D.mm-side-foot%20.mm-pager%7Bflex%3A1%7D.mm-top%7Bflex-wrap%3Awrap%3Bheight%3Aauto%3Bpadding%3A10px%2012px%3Bgap%3A8px%7D.mm-search%7Bmax-width%3Anone%3Border%3A3%3Bflex-basis%3A100%25%7D.mm-readonly%7Bdisplay%3Anone%7D%7D%40media%20(prefers-reduced-motion%3Areduce)%7B%23mm-app%20*%2C.mm-toast%7Banimation-duration%3A0.01ms%20!important%3Banimation-delay%3A0ms%20!important%3Btransition-duration%3A0.01ms%20!important%7D.mm-row.mm-in%7Bopacity%3A1%3Btransform%3Anone%7D%7D'%7D)%3Bdocument.head.appendChild(v)%3Bconst%20w%3Db(%22div%22%2C%7Bid%3A%22mm-app%22%2Crole%3A%22application%22%7D)%3Bdocument.body.appendChild(w)%3Bconst%20y%3Ddocument.documentElement.style.overflow%3Bdocument.documentElement.style.overflow%3D%22hidden%22%3Blet%20k%3Dnull%2C_%3Dnull%3Bfunction%20z(e%2Ct%3D2600)%7BclearTimeout(_)%2Ck%7C%7C(k%3Db(%22div%22%2C%7Bclass%3A%22mm-toast%22%2Crole%3A%22status%22%7D)%2Cw.appendChild(k))%2Ck.textContent%3De%2Ck.removeAttribute(%22data-hidden%22)%2Ct%3E0%26%26(_%3DsetTimeout(()%3D%3Ek%3F.setAttribute(%22data-hidden%22%2C%221%22)%2Ct))%7Dconst%20C%3D()%3D%3E%7BclearTimeout(_)%2Ck%3F.setAttribute(%22data-hidden%22%2C%221%22)%7D%3Bfunction%20%24()%7Bdocument.documentElement.style.overflow%3Dy%2Cw.remove()%2Cv.remove()%7Dconst%20j%3D%7B%7D%3Bfunction%20M(e%2Ct)%7Breturn%20b(%22label%22%2C%7Bclass%3A%22mm-check%22%7D%2C%5Bb(%22input%22%2C%7Btype%3A%22checkbox%22%2Cchecked%3Ap.filter%5Be%5D%2Conchange%3At%3D%3E%7Bp.filter%5Be%5D%3Dt.currentTarget.checked%2Cp.page%3D1%2CL()%2CU()%7D%7D)%2Cb(%22span%22%2C%7Btext%3At%7D)%5D)%7Dfunction%20U()%7Bif(!j.side)return%3Bconst%20e%3Dx()%2Ct%3D(a%3De%2CMath.max(1%2CMath.ceil(a.length%2F48)))%3Bvar%20a%3Bp.page%3Et%26%26(p.page%3Dt)%2Cj.side.replaceChildren(b(%22section%22%2C%7B%7D%2C%5Bb(%22h3%22%2C%7Btext%3A%22%E1%83%A4%E1%83%98%E1%83%9A%E1%83%A2%E1%83%A0%E1%83%98%22%7D)%2CM(%22oneWay%22%2C%22%E1%83%AA%E1%83%90%E1%83%9A%E1%83%9B%E1%83%AE%E1%83%A0%E1%83%98%E1%83%95%E1%83%98%22)%2CM(%22mutual%22%2Cn)%2CM(%22verified%22%2C%22%E1%83%95%E1%83%94%E1%83%A0%E1%83%98%E1%83%A4%E1%83%98%E1%83%AA%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%A3%E1%83%9A%E1%83%98%22)%2CM(%22private%22%2C%22%E1%83%93%E1%83%90%E1%83%AE%E1%83%A3%E1%83%A0%E1%83%A3%E1%83%9A%E1%83%98%22)%2CM(%22noPhoto%22%2C%22%E1%83%A4%E1%83%9D%E1%83%A2%E1%83%9D%E1%83%A1%20%E1%83%92%E1%83%90%E1%83%A0%E1%83%94%E1%83%A8%E1%83%94%22)%5D)%2Cb(%22section%22%2C%7B%7D%2C%5Bb(%22h3%22%2C%7Btext%3A%22%E1%83%A8%E1%83%94%E1%83%AF%E1%83%90%E1%83%9B%E1%83%94%E1%83%91%E1%83%90%22%7D)%2CE(%22%E1%83%9C%E1%83%90%E1%83%A9%E1%83%95%E1%83%94%E1%83%9C%E1%83%94%E1%83%91%E1%83%98%22%2Ce.length)%2CE(%22%E1%83%A8%E1%83%94%E1%83%9B%E1%83%9D%E1%83%AC%E1%83%9B%E1%83%94%E1%83%91%E1%83%A3%E1%83%9A%E1%83%98%22%2Cp.results.length)%2CE(%22%E1%83%93%E1%83%90%E1%83%AA%E1%83%A3%E1%83%9A%E1%83%98%22%2Cp.protectedUsers.length)%5D)%2Cb(%22div%22%2C%7Bclass%3A%22mm-side-foot%22%7D%2C%5Bp.percent%3C100%3Fb(%22button%22%2C%7Bclass%3A%22mm-btn%22%2Ctext%3Ap.paused%3F%22%E1%83%92%E1%83%90%E1%83%92%E1%83%A0%E1%83%AB%E1%83%94%E1%83%9A%E1%83%94%E1%83%91%E1%83%90%22%3A%22%E1%83%9E%E1%83%90%E1%83%A3%E1%83%96%E1%83%90%22%2Conclick%3A()%3D%3E%7Bp.paused%3D!p.paused%2Cp.paused%3Fz(%22%E1%83%9E%E1%83%90%E1%83%A3%E1%83%96%E1%83%90%22%2C0)%3AC()%2CU()%7D%7D)%3Anull%2Cb(%22div%22%2C%7Bclass%3A%22mm-pager%22%7D%2C%5Bb(%22button%22%2C%7Btext%3A%22%E2%80%B9%22%2Cdisabled%3Ap.page%3C%3D1%2C%22aria-label%22%3A%22%E1%83%A3%E1%83%99%E1%83%90%E1%83%9C%22%2Conclick%3A()%3D%3E%7Bp.page%3DMath.max(1%2Cp.page-1)%2CL()%2CU()%7D%7D)%2Cb(%22b%22%2C%7Btext%3A%60%E1%83%92%E1%83%95%E1%83%94%E1%83%A0%E1%83%93%E1%83%98%20%24%7Bp.page%7D%2F%24%7Bt%7D%60%7D)%2Cb(%22button%22%2C%7Btext%3A%22%E2%80%BA%22%2Cdisabled%3Ap.page%3E%3Dt%2C%22aria-label%22%3A%22%E1%83%AC%E1%83%98%E1%83%9C%22%2Conclick%3A()%3D%3E%7Bp.page%3DMath.min(t%2Cp.page%2B1)%2CL()%2CU()%7D%7D)%5D)%5D))%7Dconst%20E%3D(e%2Ct)%3D%3Eb(%22div%22%2C%7Bclass%3A%22mm-stat%22%7D%2C%5Bb(%22span%22%2C%7Btext%3Ae%7D)%2Cb(%22b%22%2C%7Btext%3AString(t)%7D)%5D)%3Bfunction%20S(e%2Ca)%7Bconst%20r%3Dg(e)%2Ci%3Db(%22img%22%2C%7Bclass%3A%22mm-avatar%22%2Calt%3A%22%22%2Cloading%3A%22lazy%22%2Csrc%3Ae.profile_pic_url%7C%7C%22%22%7D)%3Bi.addEventListener(%22error%22%2C()%3D%3E%7Bi.replaceWith(b(%22div%22%2C%7Bclass%3A%22mm-avatar%22%2Cstyle%3A%22display%3Agrid%3Bplace-items%3Acenter%3Bfont-size%3A15px%3Bfont-weight%3A600%3Bcolor%3Avar(--faint)%22%2Ctext%3A(e.username%5B0%5D%7C%7C%22%3F%22).toUpperCase()%7D))%7D)%3Bconst%20l%3Db(%22a%22%2C%7Bhref%3A%60%2F%24%7Be.username%7D%2F%60%2Ctarget%3A%22_blank%22%2Crel%3A%22noreferrer%22%2Ctext%3Ae.username%7D)%3Be.is_verified%26%26l.appendChild(b(%22span%22%2C%7Bclass%3A%22mm-verified%22%2Ctitle%3A%22%E1%83%95%E1%83%94%E1%83%A0%E1%83%98%E1%83%A4%E1%83%98%E1%83%AA%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%A3%E1%83%9A%E1%83%98%22%2Ctext%3A%22%E2%9C%93%22%7D))%3Bconst%20m%3Db(%22div%22%2C%7Bclass%3A%22mm-tags%22%7D)%3Be.is_private%26%26m.appendChild(b(%22span%22%2C%7Bclass%3A%22mm-tag%20mm-tag-private%22%2Ctext%3A%22%E1%83%93%E1%83%90%E1%83%AE%E1%83%A3%E1%83%A0%E1%83%A3%E1%83%9A%E1%83%98%22%7D))%2Ce.follows_viewer%26%26m.appendChild(b(%22span%22%2C%7Bclass%3A%22mm-tag%20mm-tag-mutual%22%2Ctext%3An%7D))%3Bconst%20d%3Db(%22div%22%2C%7Bclass%3A%22mm-row%22%7D%2C%5Bi%2Cb(%22div%22%2C%7Bclass%3A%22mm-id%22%7D%2C%5Bl%2Cb(%22p%22%2C%7Btext%3Ae.full_name%7C%7C%22%C2%A0%22%7D)%5D)%2Cm%2Cb(%22button%22%2C%7Bclass%3A%22mm-star%22%2Ctext%3Ar%3F%22%E2%98%85%22%3A%22%E2%98%86%22%2C%22data-on%22%3Ar%3F%221%22%3A%220%22%2Ctitle%3Ar%3Fs%3Ao%2C%22aria-label%22%3Ar%3Fs%3Ao%2Conclick%3A()%3D%3Efunction(e)%7Bp.protectedUsers%3Dg(e)%3Fp.protectedUsers.filter(t%3D%3Et.id!%3D%3De.id)%3A%5B...p.protectedUsers%2Ce%5D%2Cfunction(e)%7Btry%7BlocalStorage.setItem(t%2CJSON.stringify(e))%7Dcatch%7B%7D%7D(p.protectedUsers)%2CL()%2CU()%7D(e)%7D)%5D)%3Breturn%20a%3C10%26%26(d.classList.add(%22mm-in%22)%2Cd.style.setProperty(%22--i%22%2CString(a)))%2Cd%7Dfunction%20L()%7Bif(!j.list)return%3Bif(p.error)return%20void%20j.list.replaceChildren(b(%22div%22%2C%7Bclass%3A%22mm-error%22%7D%2C%5Bb(%22b%22%2C%7Btext%3A%22%E1%83%A1%E1%83%99%E1%83%90%E1%83%9C%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%90%20%E1%83%95%E1%83%94%E1%83%A0%20%E1%83%9B%E1%83%9D%E1%83%AE%E1%83%94%E1%83%A0%E1%83%AE%E1%83%93%E1%83%90%22%7D)%2Cb(%22span%22%2C%7Btext%3A%60%E1%83%A8%E1%83%94%E1%83%A1%E1%83%90%E1%83%AB%E1%83%9A%E1%83%9D%E1%83%90%20%E1%83%98%E1%83%9C%E1%83%A1%E1%83%A2%E1%83%90%E1%83%92%E1%83%A0%E1%83%90%E1%83%9B%E1%83%A1%20%E1%83%A8%E1%83%94%E1%83%A3%E1%83%AA%E1%83%95%E1%83%9A%E1%83%98%E1%83%90%20%E1%83%94%E1%83%A1%20%E1%83%9B%E1%83%98%E1%83%A1%E1%83%90%E1%83%9B%E1%83%90%E1%83%A0%E1%83%97%E1%83%98.%20(%24%7Bp.error%7D)%60%7D)%5D))%3Bconst%20e%3D(t%3Dx()%2Ca%3Dp.page%2Ch(t).slice(48*(a-1)%2C48*a))%3Bvar%20t%2Ca%3Be.length%3Fj.list.replaceChildren(...e.map(S))%3Aj.list.replaceChildren(b(%22div%22%2C%7Bclass%3A%22mm-empty%22%2Ctext%3Ap.percent%3C100%26%26!p.results.length%3F%22%E1%83%9B%E1%83%98%E1%83%9B%E1%83%93%E1%83%98%E1%83%9C%E1%83%90%E1%83%A0%E1%83%94%E1%83%9D%E1%83%91%E1%83%A1%20%E1%83%A1%E1%83%99%E1%83%90%E1%83%9C%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%90%E2%80%A6%22%3A%22%E1%83%90%E1%83%9B%20%E1%83%A4%E1%83%98%E1%83%9A%E1%83%A2%E1%83%A0%E1%83%98%E1%83%97%20%E1%83%90%E1%83%A0%E1%83%90%E1%83%A4%E1%83%94%E1%83%A0%E1%83%98%20%E1%83%9B%E1%83%9D%E1%83%98%E1%83%AB%E1%83%94%E1%83%91%E1%83%9C%E1%83%90%22%7D))%7Dfunction%20T(e)%7Bp.percent%3De%2Cj.bar.style.transform%3D%60scaleX(%24%7BMath.min(1%2Ce%2F100)%7D)%60%3Bconst%20t%3De%3E%3D100%3Bj.search.disabled%3D!1%2Cj.copy.disabled%3D!p.results.length%2Cj.json.disabled%3D!p.results.length%2Cj.csv.disabled%3D!p.results.length%2Ct%26%26(j.bar.style.transform%3D%22scaleX(1)%22)%7Dasync%20function%20N(e)%7Bconst%20t%3Dawait%20fetch(function(e)%7Bconst%20t%3D%7Bid%3Ac(%22ds_user_id%22)%2Cinclude_reel%3A%22true%22%2Cfetch_mutual%3A%22false%22%2Cfirst%3A%2224%22%7D%3Breturn%20e%26%26(t.after%3De)%2C%60https%3A%2F%2Fwww.instagram.com%2Fgraphql%2Fquery%2F%3Fquery_hash%3D3dec7e2c57367ef3da3d987d89f9dbc8%26variables%3D%24%7BencodeURIComponent(JSON.stringify(t))%7D%60%7D(e)%2C%7Bcredentials%3A%22include%22%7D)%3Bif(!t.ok)throw%20new%20Error(%60HTTP%20%24%7Bt.status%7D%60)%3Bconst%20a%3Dawait%20t.json()%2Cr%3Da%3F.data%3F.user%3F.edge_follow%3Bif(!r)throw%20new%20Error(%22edge_follow%22)%3Breturn%20r%7Dfunction%20O(e%2Ct%2Ca)%7Bconst%20r%3DURL.createObjectURL(new%20Blob(%5Ba%5D%2C%7Btype%3At%7D))%2Ci%3Db(%22a%22%2C%7Bhref%3Ar%2Cdownload%3Ae%7D)%3Bdocument.body.appendChild(i)%2Ci.click()%2Ci.remove()%2CURL.revokeObjectURL(r)%7Dfunction%20I(e)%7Bconst%20t%3Dh(x())%3Bif(!t.length)return%20void%20z(m)%3Bif(%22json%22%3D%3D%3De)%7Bconst%20e%3Dt.map(e%3D%3E(%7Busername%3Ae.username%2Cfull_name%3Ae.full_name%2Cfollows_you%3A!!e.follows_viewer%2Cis_verified%3A!!e.is_verified%2Cis_private%3A!!e.is_private%2Curl%3A%60https%3A%2F%2Fwww.instagram.com%2F%24%7Be.username%7D%2F%60%7D))%3Breturn%20void%20O(%22mimdevari.json%22%2C%22application%2Fjson%22%2CJSON.stringify(e%2Cnull%2C2))%7Dconst%20a%3De%3D%3E%60%22%24%7BString(e%3F%3F%22%22).replace(%2F%22%2Fg%2C'%22%22')%7D%22%60%3BO(%22mimdevari.csv%22%2C%22text%2Fcsv%3Bcharset%3Dutf-8%22%2C%22%5Cufeff%22%2B%5B%5B%22username%22%2C%22full_name%22%2C%22follows_you%22%2C%22is_verified%22%2C%22is_private%22%2C%22url%22%5D%2C...t.map(e%3D%3E%5Be.username%2Ce.full_name%2C!!e.follows_viewer%2C!!e.is_verified%2C!!e.is_private%2C%60https%3A%2F%2Fwww.instagram.com%2F%24%7Be.username%7D%2F%60%5D)%5D.map(e%3D%3Ee.map(a).join(%22%2C%22)).join(%22%5Cn%22))%7Ddocument.title%3D%60%24%7Br%7D%20%E2%80%94%20%24%7Bi%7D%60%2Cfunction()%7Bj.search%3Db(%22input%22%2C%7Bclass%3A%22mm-search%22%2Ctype%3A%22search%22%2Cplaceholder%3A%22%E1%83%9B%E1%83%9D%E1%83%AB%E1%83%94%E1%83%91%E1%83%9C%E1%83%94%E1%83%97%20%E1%83%90%E1%83%9C%E1%83%92%E1%83%90%E1%83%A0%E1%83%98%E1%83%A8%E1%83%98%22%2Cdisabled%3A!0%2Coninput%3Ae%3D%3E%7Bp.search%3De.currentTarget.value%2Cp.page%3D1%2CL()%2CU()%7D%7D)%2Cj.copy%3Db(%22button%22%2C%7Bclass%3A%22mm-btn%22%2Ctext%3A%22%E1%83%99%E1%83%9D%E1%83%9E%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%90%22%2Cdisabled%3A!0%2Conclick%3A()%3D%3Easync%20function()%7Bconst%20e%3Dh(x())%3Bif(e.length)try%7Bawait%20navigator.clipboard.writeText(e.map(e%3D%3Ee.username).join(%22%5Cn%22))%2Cz(%60%E1%83%A1%E1%83%98%E1%83%90%20%E1%83%93%E1%83%90%E1%83%99%E1%83%9D%E1%83%9E%E1%83%98%E1%83%A0%E1%83%93%E1%83%90%20%E2%80%94%20%24%7Be.length%7D%60)%7Dcatch%7Bz(%22%E1%83%99%E1%83%9D%E1%83%9E%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%90%20%E1%83%95%E1%83%94%E1%83%A0%20%E1%83%9B%E1%83%9D%E1%83%AE%E1%83%94%E1%83%A0%E1%83%AE%E1%83%93%E1%83%90%22)%7Delse%20z(m)%7D()%7D)%2Cj.json%3Db(%22button%22%2C%7Bclass%3A%22mm-btn%22%2Ctext%3A%22JSON%22%2Cdisabled%3A!0%2Conclick%3A()%3D%3EI(%22json%22)%7D)%2Cj.csv%3Db(%22button%22%2C%7Bclass%3A%22mm-btn%22%2Ctext%3A%22CSV%22%2Cdisabled%3A!0%2Conclick%3A()%3D%3EI(%22csv%22)%7D)%2Cj.bar%3Db(%22i%22)%3Bconst%20e%3Db(%22header%22%2C%7Bclass%3A%22mm-top%22%7D%2C%5Bb(%22div%22%2C%7Bclass%3A%22mm-brand%22%7D%2C%5Bb(%22b%22%2C%7Btext%3Ar%7D)%2Cb(%22span%22%2C%7Btext%3Ai%7D)%5D)%2Cb(%22span%22%2C%7Bclass%3A%22mm-readonly%22%2Ctext%3A%22%E1%83%9B%E1%83%AE%E1%83%9D%E1%83%9A%E1%83%9D%E1%83%93%20%E1%83%AC%E1%83%90%E1%83%99%E1%83%98%E1%83%97%E1%83%AE%E1%83%95%E1%83%98%E1%83%A1%20%E1%83%A0%E1%83%94%E1%83%9F%E1%83%98%E1%83%9B%E1%83%98%22%7D)%2Cj.search%2Cb(%22div%22%2C%7Bclass%3A%22mm-top-actions%22%7D%2C%5Bj.copy%2Cj.json%2Cj.csv%2Cb(%22button%22%2C%7Bclass%3A%22mm-close%22%2Ctext%3A%22%E2%9C%95%22%2Ctitle%3A%22%E1%83%93%E1%83%90%E1%83%AE%E1%83%A3%E1%83%A0%E1%83%95%E1%83%90%22%2Conclick%3A%24%7D)%5D)%2Cb(%22div%22%2C%7Bclass%3A%22mm-progress%22%7D%2C%5Bj.bar%5D)%5D)%3Bj.stage%3Db(%22div%22%2C%7Bclass%3A%22mm-launch%22%7D)%2Cw.appendChild(e)%2Cw.appendChild(j.stage)%7D()%2Cj.stage.className%3D%22mm-launch%22%2Cj.stage.replaceChildren(b(%22div%22%2C%7Bclass%3A%22mm-launch-inner%22%7D%2C%5Bb(%22span%22%2C%7Bclass%3A%22mm-eyebrow%22%2Ctext%3A%22%E1%83%90%E1%83%9C%E1%83%92%E1%83%90%E1%83%A0%E1%83%98%E1%83%A8%E1%83%98%E1%83%A1%20%E1%83%9A%E1%83%9D%E1%83%99%E1%83%90%E1%83%9A%E1%83%A3%E1%83%A0%E1%83%98%20%E1%83%A8%E1%83%94%E1%83%9B%E1%83%9D%E1%83%AC%E1%83%9B%E1%83%94%E1%83%91%E1%83%90%22%7D)%2Cb(%22h1%22%2C%7Btext%3A%22%E1%83%95%E1%83%98%E1%83%9C%20%E1%83%90%E1%83%A0%20%E1%83%90%E1%83%A0%E1%83%98%E1%83%A1%20%E1%83%97%E1%83%A5%E1%83%95%E1%83%94%E1%83%9C%E1%83%98%20%E1%83%9B%E1%83%98%E1%83%9B%E1%83%93%E1%83%94%E1%83%95%E1%83%90%E1%83%A0%E1%83%98%22%7D)%2Cb(%22p%22%2C%7Btext%3A%22%E1%83%A1%E1%83%99%E1%83%90%E1%83%9C%E1%83%94%E1%83%A0%E1%83%98%20%E1%83%90%E1%83%9B%E1%83%9D%E1%83%AC%E1%83%9B%E1%83%94%E1%83%91%E1%83%A1%2C%20%E1%83%95%E1%83%98%E1%83%A1%20%E1%83%9B%E1%83%98%E1%83%B0%E1%83%A7%E1%83%95%E1%83%94%E1%83%91%E1%83%98%E1%83%97%20%E1%83%98%E1%83%9C%E1%83%A1%E1%83%A2%E1%83%90%E1%83%92%E1%83%A0%E1%83%90%E1%83%9B%E1%83%96%E1%83%94%2C%20%E1%83%93%E1%83%90%20%E1%83%90%E1%83%A9%E1%83%95%E1%83%94%E1%83%9C%E1%83%94%E1%83%91%E1%83%A1%2C%20%E1%83%95%E1%83%98%E1%83%9C%20%E1%83%90%E1%83%A0%20%E1%83%90%E1%83%A0%E1%83%98%E1%83%A1%20%E1%83%97%E1%83%A5%E1%83%95%E1%83%94%E1%83%9C%E1%83%98%20%E1%83%9B%E1%83%98%E1%83%9B%E1%83%93%E1%83%94%E1%83%95%E1%83%90%E1%83%A0%E1%83%98.%20%E1%83%A7%E1%83%95%E1%83%94%E1%83%9A%E1%83%90%E1%83%A4%E1%83%94%E1%83%A0%E1%83%98%20%E1%83%9B%E1%83%A3%E1%83%A8%E1%83%90%E1%83%9D%E1%83%91%E1%83%A1%20%E1%83%97%E1%83%A5%E1%83%95%E1%83%94%E1%83%9C%E1%83%A1%20%E1%83%91%E1%83%A0%E1%83%90%E1%83%A3%E1%83%96%E1%83%94%E1%83%A0%E1%83%A8%E1%83%98%20%E2%80%94%20%E1%83%9B%E1%83%9D%E1%83%9C%E1%83%90%E1%83%AA%E1%83%94%E1%83%9B%E1%83%94%E1%83%91%E1%83%98%20%E1%83%90%E1%83%A0%E1%83%A1%E1%83%90%E1%83%93%20%E1%83%98%E1%83%92%E1%83%96%E1%83%90%E1%83%95%E1%83%9C%E1%83%94%E1%83%91%E1%83%90.%22%7D)%2Cb(%22div%22%2C%7Bclass%3A%22mm-safety%22%7D%2C%5Bb(%22span%22%2C%7Btext%3A%22%E1%83%94%E1%83%A1%20%E1%83%AE%E1%83%94%E1%83%9A%E1%83%A1%E1%83%90%E1%83%AC%E1%83%A7%E1%83%9D%20%E1%83%9B%E1%83%AE%E1%83%9D%E1%83%9A%E1%83%9D%E1%83%93%20%E1%83%AC%E1%83%90%E1%83%99%E1%83%98%E1%83%97%E1%83%AE%E1%83%95%E1%83%98%E1%83%A1%20%E1%83%A0%E1%83%94%E1%83%9F%E1%83%98%E1%83%9B%E1%83%A8%E1%83%98%20%E1%83%9B%E1%83%A3%E1%83%A8%E1%83%90%E1%83%9D%E1%83%91%E1%83%A1%20%E2%80%94%20%E1%83%98%E1%83%A1%20%E1%83%95%E1%83%94%E1%83%A0%E1%83%90%E1%83%A4%E1%83%94%E1%83%A0%E1%83%A1%20%E1%83%A8%E1%83%94%E1%83%AA%E1%83%95%E1%83%9A%E1%83%98%E1%83%A1%20%E1%83%97%E1%83%A5%E1%83%95%E1%83%94%E1%83%9C%E1%83%A1%20%E1%83%90%E1%83%9C%E1%83%92%E1%83%90%E1%83%A0%E1%83%98%E1%83%A8%E1%83%96%E1%83%94.%22%7D)%5D)%2Cb(%22div%22%2C%7Bclass%3A%22mm-risk%22%2Crole%3A%22note%22%7D%2C%5Bb(%22b%22%2C%7Btext%3A%22%E2%9A%A0%20%E1%83%92%E1%83%90%E1%83%9B%E1%83%9D%E1%83%98%E1%83%A7%E1%83%94%E1%83%9C%E1%83%94%E1%83%97%20%E1%83%A1%E1%83%90%E1%83%99%E1%83%A3%E1%83%97%E1%83%90%E1%83%A0%E1%83%98%20%E1%83%A0%E1%83%98%E1%83%A1%E1%83%99%E1%83%98%E1%83%97%22%7D)%2Cb(%22span%22%2C%7Btext%3A%22%E1%83%A1%E1%83%99%E1%83%A0%E1%83%98%E1%83%9E%E1%83%A2%E1%83%98%20%E1%83%98%E1%83%A7%E1%83%94%E1%83%9C%E1%83%94%E1%83%91%E1%83%A1%20%E1%83%98%E1%83%9C%E1%83%A1%E1%83%A2%E1%83%90%E1%83%92%E1%83%A0%E1%83%90%E1%83%9B%E1%83%98%E1%83%A1%20%E1%83%A8%E1%83%98%E1%83%93%E1%83%90%20API-%E1%83%A1%2C%20%E1%83%A0%E1%83%90%E1%83%AA%20%E1%83%94%E1%83%AC%E1%83%98%E1%83%9C%E1%83%90%E1%83%90%E1%83%A6%E1%83%9B%E1%83%93%E1%83%94%E1%83%92%E1%83%94%E1%83%91%E1%83%90%20%E1%83%9B%E1%83%98%E1%83%A1%E1%83%98%20%E1%83%9B%E1%83%9D%E1%83%AE%E1%83%9B%E1%83%90%E1%83%A0%E1%83%94%E1%83%91%E1%83%98%E1%83%A1%20%E1%83%AC%E1%83%94%E1%83%A1%E1%83%94%E1%83%91%E1%83%A1.%20%E1%83%90%E1%83%9C%E1%83%92%E1%83%90%E1%83%A0%E1%83%98%E1%83%A8%E1%83%98%E1%83%A1%20%E1%83%93%E1%83%A0%E1%83%9D%E1%83%94%E1%83%91%E1%83%98%E1%83%97%E1%83%98%20%E1%83%A8%E1%83%94%E1%83%96%E1%83%A6%E1%83%A3%E1%83%93%E1%83%95%E1%83%98%E1%83%A1%20%E1%83%A0%E1%83%98%E1%83%A1%E1%83%99%E1%83%98%20%E1%83%9B%E1%83%AA%E1%83%98%E1%83%A0%E1%83%94%E1%83%90%2C%20%E1%83%9B%E1%83%90%E1%83%92%E1%83%A0%E1%83%90%E1%83%9B%20%E1%83%90%E1%83%A0%E1%83%A1%E1%83%94%E1%83%91%E1%83%9D%E1%83%91%E1%83%A1.%22%7D)%5D)%2Cb(%22div%22%2C%7Bclass%3A%22mm-launch-actions%22%7D%2C%5Bb(%22button%22%2C%7Bclass%3A%22mm-btn%20mm-btn-primary%22%2Ctext%3Ap.results.length%3F%22%E1%83%AE%E1%83%94%E1%83%9A%E1%83%90%E1%83%AE%E1%83%9A%E1%83%90%20%E1%83%A1%E1%83%99%E1%83%90%E1%83%9C%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%90%22%3A%22%E1%83%A1%E1%83%99%E1%83%90%E1%83%9C%E1%83%98%E1%83%A0%E1%83%94%E1%83%91%E1%83%98%E1%83%A1%20%E1%83%93%E1%83%90%E1%83%AC%E1%83%A7%E1%83%94%E1%83%91%E1%83%90%22%2Conclick%3Aasync%20function()%7Bif(!e%26%26!c(%22ds_user_id%22))return%20void%20z(%22%E1%83%97%E1%83%A5%E1%83%95%E1%83%94%E1%83%9C%E1%83%98%20%E1%83%A1%E1%83%94%E1%83%A1%E1%83%98%E1%83%90%20%E1%83%95%E1%83%94%E1%83%A0%20%E1%83%9B%E1%83%9D%E1%83%98%E1%83%AB%E1%83%94%E1%83%91%E1%83%9C%E1%83%90%20%E2%80%94%20%E1%83%92%E1%83%97%E1%83%AE%E1%83%9D%E1%83%95%E1%83%97%2C%20%E1%83%97%E1%83%90%E1%83%95%E1%83%98%E1%83%93%E1%83%90%E1%83%9C%20%E1%83%A8%E1%83%94%E1%83%AE%E1%83%95%E1%83%98%E1%83%93%E1%83%94%E1%83%97%20%E1%83%98%E1%83%9C%E1%83%A1%E1%83%A2%E1%83%90%E1%83%92%E1%83%A0%E1%83%90%E1%83%9B%E1%83%96%E1%83%94.%22%2C5e3)%3Bif(p.status%3D%22scanning%22%2Cp.results%3D%5B%5D%2Cp.error%3Dnull%2Cp.page%3D1%2Cp.percent%3D0%2Cp.paused%3D!1%2Cfunction()%7Bj.stage.className%3D%22mm-body%22%2Cj.side%3Db(%22aside%22%2C%7Bclass%3A%22mm-side%22%7D)%2Cj.list%3Db(%22div%22%2C%7Bclass%3A%22mm-list%22%7D)%3Bconst%20e%3D(e%2Ct)%3D%3Eb(%22button%22%2C%7Bclass%3A%22mm-tab%22%2Crole%3A%22tab%22%2Ctext%3At%2C%22aria-selected%22%3Ap.tab%3D%3D%3De%3F%22true%22%3A%22false%22%2Conclick%3A()%3D%3E%7Bp.tab!%3D%3De%26%26(p.tab%3De%2Cp.page%3D1%2C%5B...j.tabs.children%5D.forEach((e%2Ct)%3D%3E%7Be.setAttribute(%22aria-selected%22%2C(0%3D%3D%3Dt%3F%22list%22%3A%22protected%22)%3D%3D%3Dp.tab%3F%22true%22%3A%22false%22)%7D)%2CL()%2CU())%7D%7D)%3Bj.tabs%3Db(%22nav%22%2C%7Bclass%3A%22mm-tabs%22%2Crole%3A%22tablist%22%7D%2C%5Be(%22list%22%2C%22%E1%83%A1%E1%83%98%E1%83%90%22)%2Ce(%22protected%22%2C%22%E1%83%93%E1%83%90%E1%83%AA%E1%83%A3%E1%83%9A%E1%83%98%20%E2%98%85%22)%5D)%2Cj.stage.replaceChildren(j.side%2Cb(%22section%22%2C%7Bclass%3A%22mm-main%22%7D%2C%5Bj.tabs%2Cj.list%5D))%2CU()%2CL()%7D()%2CT(0)%2Ce)return%20void%20await%20async%20function()%7Bconst%20e%3D%5B%5B%22alina.frames%22%2C%22%E1%83%90%E1%83%9A%E1%83%98%E1%83%9C%E1%83%90%20%E1%83%9B%E1%83%9D%E1%83%A0%E1%83%94%E1%83%9C%E1%83%9D%22%5D%2C%5B%22brass.and.bone%22%2C%22%E1%83%97%E1%83%94%E1%83%9D%20%E1%83%A3%E1%83%9D%E1%83%9A%E1%83%A8%E1%83%98%22%5D%2C%5B%22citrus.archive%22%2C%22%E1%83%9B%E1%83%90%E1%83%A0%E1%83%90%20%E1%83%99%E1%83%98%E1%83%9B%E1%83%98%22%5D%2C%5B%22dawn.ledger%22%2C%22%E1%83%AF%E1%83%9D%E1%83%9C%20%E1%83%91%E1%83%94%E1%83%9A%E1%83%98%22%5D%2C%5B%22elias.market%22%2C%22%E1%83%94%E1%83%9A%E1%83%98%E1%83%90%E1%83%A1%20%E1%83%9C%E1%83%A3%E1%83%A0%E1%83%98%22%5D%2C%5B%22fieldnotes.studio%22%2C%22%E1%83%9C%E1%83%90%E1%83%93%E1%83%98%E1%83%90%20%E1%83%A0%E1%83%94%E1%83%98%E1%83%94%E1%83%A1%E1%83%98%22%5D%2C%5B%22glint.supply%22%2C%22%E1%83%A0%E1%83%94%E1%83%9B%E1%83%98%20%E1%83%9E%E1%83%90%E1%83%A0%E1%83%99%E1%83%98%22%5D%2C%5B%22harbor.sequence%22%2C%22%E1%83%90%E1%83%98%E1%83%95%E1%83%98%20%E1%83%A9%E1%83%94%E1%83%9C%E1%83%98%22%5D%2C%5B%22inkline.daily%22%2C%22%E1%83%A1%E1%83%9D%E1%83%A4%E1%83%98%E1%83%90%20%E1%83%92%E1%83%A0%E1%83%90%E1%83%9C%E1%83%A2%E1%83%98%22%5D%2C%5B%22juniper.signal%22%2C%22%E1%83%99%E1%83%90%E1%83%9A%20%E1%83%A0%E1%83%98%E1%83%93%E1%83%98%22%5D%2C%5B%22keystone.labs%22%2C%22%E1%83%9B%E1%83%98%E1%83%9C%E1%83%90%20%E1%83%A2%E1%83%9D%E1%83%A0%E1%83%94%E1%83%A1%E1%83%98%22%5D%2C%5B%22lowlight.club%22%2C%22%E1%83%9D%E1%83%A3%E1%83%94%E1%83%9C%20%E1%83%95%E1%83%9D%E1%83%A1%E1%83%98%22%5D%2C%5B%22maple.dispatch%22%2C%22%E1%83%9C%E1%83%98%E1%83%9C%E1%83%9D%20%E1%83%90%E1%83%91%E1%83%90%E1%83%A8%E1%83%98%E1%83%AB%E1%83%94%22%5D%2C%5B%22northfield.co%22%2C%22%E1%83%9A%E1%83%A3%E1%83%99%E1%83%90%20%E1%83%92%E1%83%94%E1%83%9A%E1%83%90%E1%83%A8%E1%83%95%E1%83%98%E1%83%9A%E1%83%98%22%5D%2C%5B%22orchard.tape%22%2C%22%E1%83%90%E1%83%9C%E1%83%90%20%E1%83%99%E1%83%95%E1%83%90%E1%83%A0%E1%83%90%E1%83%AA%E1%83%AE%E1%83%94%E1%83%9A%E1%83%98%E1%83%90%22%5D%2C%5B%22paper.transit%22%2C%22%E1%83%92%E1%83%98%E1%83%9D%E1%83%A0%E1%83%92%E1%83%98%20%E1%83%9A%E1%83%9D%E1%83%9B%E1%83%98%E1%83%AB%E1%83%94%22%5D%2C%5B%22quiet.harvest%22%2C%22%E1%83%97%E1%83%90%E1%83%9B%E1%83%90%E1%83%A0%20%E1%83%A9%E1%83%AE%E1%83%94%E1%83%98%E1%83%AB%E1%83%94%22%5D%2C%5B%22river.notation%22%2C%22%E1%83%93%E1%83%90%E1%83%97%E1%83%9D%20%E1%83%91%E1%83%94%E1%83%A0%E1%83%98%E1%83%AB%E1%83%94%22%5D%2C%5B%22saltflat.press%22%2C%22%E1%83%94%E1%83%9A%E1%83%94%E1%83%9C%E1%83%94%20%E1%83%9B%E1%83%90%E1%83%98%E1%83%A1%E1%83%A3%E1%83%A0%E1%83%90%E1%83%AB%E1%83%94%22%5D%2C%5B%22tinder.box.co%22%2C%22%E1%83%96%E1%83%A3%E1%83%A0%E1%83%90%20%E1%83%99%E1%83%90%E1%83%9E%E1%83%90%E1%83%9C%E1%83%90%E1%83%AB%E1%83%94%22%5D%2C%5B%22umber.field%22%2C%22%E1%83%9B%E1%83%90%E1%83%A0%E1%83%98%E1%83%90%E1%83%9B%20%E1%83%AF%E1%83%90%E1%83%95%E1%83%90%E1%83%AE%E1%83%98%E1%83%A8%E1%83%95%E1%83%98%E1%83%9A%E1%83%98%22%5D%2C%5B%22vellum.works%22%2C%22%E1%83%A1%E1%83%90%E1%83%9C%E1%83%93%E1%83%A0%E1%83%9D%20%E1%83%AE%E1%83%A3%E1%83%AA%E1%83%98%E1%83%A8%E1%83%95%E1%83%98%E1%83%9A%E1%83%98%22%5D%2C%5B%22wander.ledger%22%2C%22%E1%83%A5%E1%83%94%E1%83%97%E1%83%98%20%E1%83%A6%E1%83%9D%E1%83%A6%E1%83%9D%E1%83%91%E1%83%94%E1%83%A0%E1%83%98%E1%83%AB%E1%83%94%22%5D%2C%5B%22xenon.daily%22%2C%22%E1%83%98%E1%83%A0%E1%83%90%E1%83%99%E1%83%9A%E1%83%98%20%E1%83%AC%E1%83%94%E1%83%A0%E1%83%94%E1%83%97%E1%83%94%E1%83%9A%E1%83%98%22%5D%2C%5B%22yellow.margin%22%2C%22%E1%83%A1%E1%83%9D%E1%83%A4%E1%83%9D%20%E1%83%93%E1%83%9D%E1%83%9A%E1%83%98%E1%83%AB%E1%83%94%22%5D%2C%5B%22zephyr.stock%22%2C%22%E1%83%91%E1%83%94%E1%83%A5%E1%83%90%20%E1%83%9C%E1%83%90%E1%83%93%E1%83%98%E1%83%A0%E1%83%90%E1%83%AB%E1%83%94%22%5D%5D.map((%5Be%2Ct%5D%2Ca)%3D%3E%7Breturn%7Bid%3A%60demo-%24%7Ba%7D%60%2Cusername%3Ae%2Cfull_name%3At%2Cprofile_pic_url%3Aa%259%3D%3D4%3F%22%22%3A(r%3Da%2C%22data%3Aimage%2Fsvg%2Bxml%3Butf8%2C%22%2BencodeURIComponent(%60%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2284%22%20height%3D%2284%22%3E%3Crect%20width%3D%2284%22%20height%3D%2284%22%20fill%3D%22hsl(%24%7B%5B14%2C42%2C96%2C158%2C202%2C258%2C318%5D%5Br%257%5D%7D%2038%25%2064%25)%22%2F%3E%3C%2Fsvg%3E%60))%2Cis_verified%3Aa%257%3D%3D2%2Cis_private%3Aa%255%3D%3D1%2Cfollows_viewer%3Aa%254%3D%3D0%7D%3Bvar%20r%7D)%3Blet%20t%3D0%3Bfor(%3Bt%3Ce.length%3B)p.paused%3Fawait%20u(300)%3A(p.results.push(...e.slice(t%2Ct%2B6))%2Ct%2B%3D6%2CT(Math.min(99%2CMath.round(t%2Fe.length*100)))%2CL()%2CU()%2Cawait%20u(320))%3BT(100)%2CL()%2CU()%2Cz(%60%24%7Bl%7D%20%E2%80%94%20%24%7Bp.results.length%7D%60)%7D()%3Blet%20t%2Ca%3D-1%2Cr%3D0%2Ci%3D0%2Cn%3D0%3Bfor(%3B%3B)%7Bif(p.paused)%7Bawait%20u(400)%3Bcontinue%7Dlet%20e%3Btry%7Be%3Dawait%20N(t)%2Cn%3D0%7Dcatch(e)%7Bif(n%2B%3D1%2Cn%3E%3D3)return%20p.error%3De.message%2Cp.status%3D%22error%22%2CC()%2Cvoid%20L()%3Bawait%20u(1500*n)%3Bcontinue%7Dif(-1%3D%3D%3Da%26%26(a%3De.count%7C%7C0)%2Cr%2B%3De.edges.length%2Cp.results.push(...e.edges.map(e%3D%3Ee.node))%2CT(a%3FMath.min(99%2CMath.round(r%2Fa*100))%3A0)%2CL()%2CU()%2C!e.page_info.has_next_page)break%3Bif(t%3De.page_info.end_cursor%2Cawait%20u(f(600%2C1400))%2C%2B%2Bi%256%3D%3D0)%7Bconst%20e%3Df(8e3%2C14e3)%3Bz(d(Math.round(e%2F1e3))%2Ce)%2Cawait%20u(e)%2CC()%7D%7DT(100)%2CL()%2CU()%2Cz(%60%24%7Bl%7D%20%E2%80%94%20%24%7Bp.results.length%7D%60)%7D%7D)%2Cb(%22span%22%2C%7Bclass%3A%22mm-launch-note%22%2Ctext%3A%22%E1%83%9B%E1%83%A3%E1%83%A8%E1%83%90%E1%83%9D%E1%83%91%E1%83%A1%20%E1%83%9B%E1%83%AE%E1%83%9D%E1%83%9A%E1%83%9D%E1%83%93%20%E1%83%90%E1%83%9B%20%E1%83%91%E1%83%A0%E1%83%90%E1%83%A3%E1%83%96%E1%83%94%E1%83%A0%E1%83%98%E1%83%A1%20%E1%83%A1%E1%83%94%E1%83%A1%E1%83%98%E1%83%90%E1%83%A8%E1%83%98%22%7D)%5D)%5D))%2Cdocument.addEventListener(%22keydown%22%2Ce%3D%3E%7B%22Escape%22%3D%3D%3De.key%26%26document.getElementById(%22mm-app%22)%26%26%24()%7D)%7D)()%3B" draggable="true"
+              >★ მიმდევარი</a
+            >
+            <p class="hint">
+              შემდეგ ინსტაგრამზე ერთი დაწკაპუნება საკმარისია.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>როგორ გამოვიყენოთ</h2>
+        <ol>
+          <li>გახსენით <code>instagram.com</code> და დარწმუნდით, რომ შესული ხართ.</li>
+          <li>დააჭირეთ <code>F12</code>-ს და აირჩიეთ ჩანართი <code>Console</code>.</li>
+          <li>ჩასვით კოდი და დააჭირეთ <code>Enter</code>-ს.</li>
+          <li>დააჭირეთ ღილაკს „სკანირების დაწყება“.</li>
+        </ol>
+        <p class="hint">
+          დახურვა: <code>Esc</code> ან ✕ ღილაკი. გვერდი უცვლელი დაბრუნდება.
+        </p>
+      </section>
+
+      <section>
+        <h2>რას აკეთებს</h2>
+        <ul class="feat">
+          <li>აჩვენებს, ვინ არ არის თქვენი მიმდევარი (ცალმხრივი და ორმხრივი)</li>
+          <li>ფილტრები: ვერიფიცირებული, დახურული, ფოტოს გარეშე</li>
+          <li>დაცული ანგარიშები — რომ სიიდან დაიმალონ</li>
+          <li>ძებნა მომხმარებლის სახელით ან სრული სახელით</li>
+          <li>ექსპორტი: კოპირება, JSON, CSV</li>
+          <li>ღია და ბნელი თემა, ქართული ინტერფეისი</li>
+        </ul>
+      </section>
+
+      <section>
+        <h2>დიზაინის ნახვა</h2>
+        <p class="lede" style="font-size: 15px">
+          ინსტაგრამის გარეშეც შეგიძლიათ ნახოთ, როგორ გამოიყურება —
+          <a href="./preview.html">გახსენით დემო</a> სატესტო მონაცემებით.
+        </p>
+      </section>
+    </main>
+
+    <footer class="wrap">
+      <div class="row">
+        <span>MIT ლიცენზია · ღია კოდი</span>
+        <span>
+          ავტორი:
+          <a href="https://www.instagram.com/19rl96/" target="_blank" rel="noopener"
+            >@19rl96</a
+          >
+        </span>
+      </div>
+      <p style="margin: 14px 0 0">
+        მადლობა
+        <a
+          href="https://github.com/davidarroyo1234/InstagramUnfollowers"
+          target="_blank"
+          rel="noopener"
+          >InstagramUnfollowers</a
+        >-ის ავტორს იდეისთვის. კოდი დამოუკიდებლად არის დაწერილი.
+      </p>
+    </footer>
+
+    <script>
+      (() => {
+        const btn = document.getElementById('copy');
+        const label = btn.textContent;
+        let timer = null;
+
+        btn.addEventListener('click', async () => {
+          clearTimeout(timer);
+          try {
+            const res = await fetch('./mimdevari.js');
+            if (!res.ok) throw new Error(res.status);
+            await navigator.clipboard.writeText(await res.text());
+            btn.textContent = '✓ დაკოპირდა';
+          } catch {
+            btn.textContent = 'ვერ მოხერხდა';
+          }
+          timer = setTimeout(() => (btn.textContent = label), 2200);
+        });
+
+        // ბუკმარკლეტი ბილდის დროს ჩაისმება; თუ არ ჩასმულა, ღილაკს ვმალავთ.
+        const bm = document.getElementById('bm');
+        if (bm.getAttribute('href') === 'javascript:void(0)') {
+          bm.closest('.card').style.display = 'none';
+        }
+      })();
+    </script>
+  </body>
+</html>

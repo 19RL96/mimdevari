@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ka">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>მიმდევარი — დიზაინის გადახედვა</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: #faf9f7;
+        font-family: "Noto Sans Georgian", system-ui, sans-serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        html,
+        body {
+          background: #131311;
+        }
+      }
+      .fallback {
+        display: grid;
+        place-items: center;
+        min-height: 100vh;
+        padding: 24px;
+        color: #78756d;
+        font-size: 14px;
+        line-height: 1.6;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="fallback">
+      <p>
+        დემო დაიხურა.<br />
+        გვერდის განახლებით თავიდან გაიხსნება.
+      </p>
+    </div>
+
+    <script>
+      // დემო რეჟიმი: ინსტაგრამის ნაცვლად ჩაშენებული სატესტო მონაცემები იტვირთება.
+      window.__MM_DEMO__ = true;
+    </script>
+    <script src="./mimdevari.js"></script>
+  </body>
+</html>
