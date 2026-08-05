@@ -202,8 +202,10 @@
   flex-direction: column;
   background: var(--paper);
   color: var(--ink);
+  /* Sylfaen — Windows-ის ერთადერთი გარანტირებული ქართული ფონტი; ბოლოში დგას,
+     რომ ლათინური ტექსტი system-ui-ს დარჩეს და მხოლოდ ქართული ჩამოვარდეს მასზე. */
   font-family: "Noto Sans Georgian", "BPG Arial", system-ui, -apple-system,
-    "Segoe UI", sans-serif;
+    "Segoe UI", Sylfaen, sans-serif;
   font-size: 14px;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
