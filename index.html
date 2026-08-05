@@ -108,19 +108,27 @@
       }
 
       .author {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
         font-size: 13px;
-        color: var(--muted);
+        color: var(--faint);
       }
 
       .author a {
         color: var(--ink);
-        font-weight: 600;
+        font-size: 17px;
+        font-weight: 680;
+        letter-spacing: -0.015em;
         text-decoration: none;
-        border-bottom: 1px solid var(--line);
+        border-bottom: 1.5px solid var(--line);
+        transition: border-color 150ms var(--ease);
       }
 
-      .author a:hover {
-        border-bottom-color: currentColor;
+      @media (hover: hover) and (pointer: fine) {
+        .author a:hover {
+          border-bottom-color: currentColor;
+        }
       }
 
       /* ---------- hero ---------- */
@@ -371,6 +379,15 @@
         color: var(--muted);
       }
 
+      footer a[href*="instagram"] {
+        color: var(--ink);
+        font-size: 15px;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+        text-decoration: none;
+        border-bottom: 1px solid var(--line);
+      }
+
       footer .row {
         display: flex;
         justify-content: space-between;
@@ -493,15 +510,6 @@
           >
         </span>
       </div>
-      <p style="margin: 14px 0 0">
-        მადლობა
-        <a
-          href="https://github.com/davidarroyo1234/InstagramUnfollowers"
-          target="_blank"
-          rel="noopener"
-          >InstagramUnfollowers</a
-        >-ის ავტორს იდეისთვის. კოდი დამოუკიდებლად არის დაწერილი.
-      </p>
     </footer>
 
     <script>

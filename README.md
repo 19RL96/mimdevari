@@ -92,14 +92,6 @@ node build.mjs
 
 ---
 
-## მადლობა
-
-იდეისთვის მადლობა [InstagramUnfollowers](https://github.com/davidarroyo1234/InstagramUnfollowers)-ის
-ავტორს. ამ პროექტის კოდი დამოუკიდებლად არის დაწერილი — vanilla JavaScript,
-ჩარჩოს გარეშე.
-
----
-
 ## ავტორი
 
 [@19rl96](https://www.instagram.com/19rl96/)
