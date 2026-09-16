@@ -24,8 +24,10 @@
 
   /* ------------------------------------------------------------- constants */
 
-  const QUERY_HASH = '3dec7e2c57367ef3da3d987d89f9dbc8';
+  // ინსტაგრამის საკუთარი ვებ-კლიენტის იდენტიფიკატორი — შიდა REST მისამართები ამის გარეშე არ პასუხობს
+  const IG_APP_ID = '936619743392459';
   const PER_PAGE = 48;
+  const MAX_PAGES = 400; // დაცვა უსასრულო ციკლისგან, თუ ინსტაგრამი ერთსა და იმავე გვერდს დააბრუნებს
   const STORAGE_KEY = 'mm_protected';
   const BLANK_AVATAR_IDS = [
     '44884218_345707102882519_2446069589734326272_n',
@@ -79,6 +81,11 @@
 
     empty: 'ამ ფილტრით არაფერი მოიძებნა',
     waiting: 'მიმდინარეობს სკანირება…',
+    phaseFollowing: (n) => `ეტაპი 1/2 · მიდევნებული ანგარიშები: ${n}`,
+    phaseFollowers: (n) => `ეტაპი 2/2 · მიმდევრები: ${n}`,
+    partial:
+      'მიმდევრების სია ბოლომდე ვერ ჩაიტვირთა — ზოგი ორმხრივი კავშირი შესაძლოა ცალმხრივად ჩანდეს.',
+    partialFollowing: (n) => `სკანირება შეწყდა — ჩაიტვირთა მხოლოდ ${n} მიდევნებული ანგარიში.`,
 
     done: 'სკანირება დასრულდა',
     copied: 'სია დაკოპირდა',
@@ -102,6 +109,7 @@
     search: '',
     paused: false,
     error: null,
+    phase: null, // { kind: 'following' | 'followers', count } სკანირების დროს
     filter: {
       oneWay: true,
       mutual: false,
@@ -1205,7 +1213,7 @@
       refs.list.replaceChildren(
         el('div', {
           class: 'mm-empty',
-          text: state.percent < 100 && !state.results.length ? T.waiting : T.empty,
+          text: state.percent < 100 && !state.results.length ? waitingText() : T.empty,
         })
       );
       return;
@@ -1227,28 +1235,103 @@
 
   /* ------------------------------------------------------------------ data */
 
-  function buildUrl(cursor) {
-    const uid = cookie('ds_user_id');
-    const vars = {
-      id: uid,
-      include_reel: 'true',
-      fetch_mutual: 'false',
-      first: '24',
-    };
-    if (cursor) vars.after = cursor;
-    return (
-      `https://www.instagram.com/graphql/query/?query_hash=${QUERY_HASH}` +
-      `&variables=${encodeURIComponent(JSON.stringify(vars))}`
-    );
+  /* ინსტაგრამის შიდა REST მისამართები.
+   *
+   * ძველი საჯარო GraphQL გზა (query_hash) 2026 წლის სექტემბრიდან სტრუქტურულად
+   * სწორ, მაგრამ ცარიელ პასუხს აბრუნებს (200 OK, სწორი count, ნულოვანი edges),
+   * ამიტომ სკანირება ორფაზიანია: ჯერ ვის მიჰყვებით, მერე ვინ მოგყვებათ.
+   * ცალმხრივობა ორი სიის შედარებით დგინდება — ახალი მისამართი follows_viewer-ს
+   * არ აბრუნებს. */
+
+  function waitingText() {
+    const ph = state.phase;
+    if (!ph) return T.waiting;
+    return ph.kind === 'following' ? T.phaseFollowing(ph.count) : T.phaseFollowers(ph.count);
   }
 
-  async function fetchPage(cursor) {
-    const res = await fetch(buildUrl(cursor), { credentials: 'include' });
+  function listUrl(kind, maxId) {
+    const uid = cookie('ds_user_id');
+    let url = `https://www.instagram.com/api/v1/friendships/${uid}/${kind}/?count=${PER_PAGE}`;
+    if (maxId) url += `&max_id=${encodeURIComponent(maxId)}`;
+    return url;
+  }
+
+  async function fetchPage(kind, maxId) {
+    const res = await fetch(listUrl(kind, maxId), {
+      credentials: 'include',
+      headers: { 'X-IG-App-ID': IG_APP_ID },
+    });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    const edge = json?.data?.user?.edge_follow;
-    if (!edge) throw new Error('edge_follow');
-    return edge;
+    if (!Array.isArray(json?.users)) throw new Error('users');
+    return json;
+  }
+
+  function toUser(raw, followsViewer) {
+    return {
+      id: String(raw.pk_id ?? raw.pk),
+      username: raw.username,
+      full_name: raw.full_name || '',
+      profile_pic_url: raw.profile_pic_url || '',
+      is_private: !!raw.is_private,
+      is_verified: !!raw.is_verified,
+      follows_viewer: followsViewer,
+    };
+  }
+
+  // ზუსტი სრული რიცხვი წინასწარ აღარ მოდის — პროგრესი შეფასებითია და 100-ს არ აღწევს
+  const estimate = (n) => 100 * (1 - 1 / (1 + n / 150));
+
+  /** ერთი სიის ყველა გვერდი. აბრუნებს { users, complete } — შეცდომაზე ნაწილობრივ სიას. */
+  async function fetchList(kind, from, to) {
+    const users = [];
+    let maxId;
+    let pages = 0;
+    let misses = 0;
+
+    state.phase = { kind, count: 0 };
+    renderList();
+
+    while (true) {
+      if (state.paused) {
+        await sleep(400);
+        continue;
+      }
+
+      let page;
+      try {
+        page = await fetchPage(kind, maxId);
+        misses = 0;
+      } catch (err) {
+        misses += 1;
+        if (misses >= 3) return { users, complete: false, error: err.message };
+        await sleep(1500 * misses);
+        continue;
+      }
+
+      users.push(...page.users);
+      state.phase = { kind, count: users.length };
+      setProgress(Math.round(from + (estimate(users.length) * (to - from)) / 100));
+      renderList();
+
+      const next = page.next_max_id;
+      const more = !!next && next !== maxId && page.has_more !== false && page.users.length > 0;
+      if (!more) break;
+      maxId = next;
+
+      if (++pages >= MAX_PAGES) return { users, complete: false, error: 'pages' };
+
+      await sleep(rand(600, 1400));
+
+      if (pages % 6 === 0) {
+        const wait = rand(8000, 14000);
+        toast(T.cooldown(Math.round(wait / 1000)), wait);
+        await sleep(wait);
+        hideToast();
+      }
+    }
+
+    return { users, complete: true };
   }
 
   async function startScan() {
@@ -1263,6 +1346,7 @@
     state.page = 1;
     state.percent = 0;
     state.paused = false;
+    state.phase = null;
 
     renderWorkspace();
     setProgress(0);
@@ -1272,60 +1356,32 @@
       return;
     }
 
-    let cursor;
-    let total = -1;
-    let loaded = 0;
-    let cycles = 0;
-    let misses = 0;
-
-    while (true) {
-      if (state.paused) {
-        await sleep(400);
-        continue;
-      }
-
-      let edge;
-      try {
-        edge = await fetchPage(cursor);
-        misses = 0;
-      } catch (err) {
-        misses += 1;
-        if (misses >= 3) {
-          state.error = err.message;
-          state.status = 'error';
-          hideToast();
-          renderList();
-          return;
-        }
-        await sleep(1500 * misses);
-        continue;
-      }
-
-      if (total === -1) total = edge.count || 0;
-      loaded += edge.edges.length;
-      state.results.push(...edge.edges.map((e) => e.node));
-
-      setProgress(total ? Math.min(99, Math.round((loaded / total) * 100)) : 0);
+    // ეტაპი 1 — ვის მიჰყვებით
+    const following = await fetchList('following', 0, 45);
+    if (!following.complete && !following.users.length) {
+      state.error = following.error;
+      state.status = 'error';
+      state.phase = null;
+      hideToast();
       renderList();
-      renderSidebar();
-
-      if (!edge.page_info.has_next_page) break;
-      cursor = edge.page_info.end_cursor;
-
-      await sleep(rand(600, 1400));
-
-      if (++cycles % 6 === 0) {
-        const wait = rand(8000, 14000);
-        toast(T.cooldown(Math.round(wait / 1000)), wait);
-        await sleep(wait);
-        hideToast();
-      }
+      return;
     }
+
+    // ეტაპი 2 — ვინ მოგყვებათ (მხოლოდ id-ები გვჭირდება)
+    let followers = { users: [], complete: true };
+    if (following.users.length) followers = await fetchList('followers', 45, 95);
+    const followerIds = new Set(followers.users.map((u) => String(u.pk_id ?? u.pk)));
+
+    state.results = following.users.map((u) => toUser(u, followerIds.has(String(u.pk_id ?? u.pk))));
+    state.phase = null;
 
     setProgress(100);
     renderList();
     renderSidebar();
-    toast(`${T.done} — ${state.results.length}`);
+
+    if (!followers.complete) toast(T.partial, 8000);
+    else if (!following.complete) toast(T.partialFollowing(state.results.length), 8000);
+    else toast(`${T.done} — ${state.results.length}`);
   }
 
   /* ------------------------------------------------------------------ demo */
