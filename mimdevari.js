@@ -91,7 +91,9 @@
     copied: 'სია დაკოპირდა',
     nothingToCopy: 'კოპირებისთვის სია ცარიელია',
     paused: 'პაუზა',
-    cooldown: (s) => `პაუზა ${s} წამი — ბლოკირების თავიდან ასაცილებლად`,
+    restEyebrow: 'სკანერი ისვენებს',
+    restUnit: 'წამი',
+    restBody: 'მოკლე შესვენება ბლოკირების თავიდან ასაცილებლად. სკანირება თავისით გაგრძელდება.',
     failed: 'სკანირება ვერ მოხერხდა',
     failedDetail: 'შესაძლოა ინსტაგრამს შეუცვლია ეს მისამართი.',
     noSession: 'თქვენი სესია ვერ მოიძებნა — გთხოვთ, თავიდან შეხვიდეთ ინსტაგრამზე.',
@@ -795,6 +797,94 @@
   pointer-events: none;
 }
 
+/* ---------- rest popup ---------- */
+
+.mm-rest-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 2147483000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--paper) 72%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 220ms var(--ease);
+}
+.mm-rest-backdrop[data-in="1"] { opacity: 1; }
+
+.mm-rest {
+  width: min(360px, 100%);
+  padding: 26px 26px 22px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--panel);
+  color: var(--ink);
+  text-align: center;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
+  transform: translateY(10px) scale(0.97);
+  transition: transform 260ms var(--ease);
+}
+.mm-rest-backdrop[data-in="1"] .mm-rest { transform: none; }
+
+.mm-rest-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  font-size: 11px;
+  color: var(--muted);
+}
+.mm-rest-eyebrow::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--amber);
+  animation: mm-pulse 1.4s ease-in-out infinite;
+}
+@keyframes mm-pulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+.mm-rest-count {
+  display: block;
+  margin: 14px 0 2px;
+  font-size: 52px;
+  line-height: 1;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.mm-rest-unit { display: block; font-size: 13px; color: var(--muted); }
+
+.mm-rest p {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.mm-rest-bar {
+  margin-top: 18px;
+  height: 3px;
+  border-radius: 999px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+.mm-rest-bar i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--amber);
+  transform-origin: left center;
+  transition: transform 240ms linear;
+}
+
 /* ---------- close ---------- */
 
 .mm-close {
@@ -840,7 +930,8 @@
 
 @media (prefers-reduced-motion: reduce) {
   #mm-app *,
-  .mm-toast {
+  .mm-toast,
+  .mm-rest-backdrop {
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
@@ -895,6 +986,38 @@
     clearTimeout(toastTimer);
     toastNode?.setAttribute('data-hidden', '1');
   };
+
+  /** შესვენების პოპაპი უკუთვლით — ბრუნდება, როცა ms გავიდა. */
+  async function rest(ms) {
+    const count = el('b', { class: 'mm-rest-count' });
+    const bar = el('i');
+    const backdrop = el('div', { class: 'mm-rest-backdrop', role: 'status', 'aria-live': 'polite' }, [
+      el('div', { class: 'mm-rest' }, [
+        el('span', { class: 'mm-rest-eyebrow', text: T.restEyebrow }),
+        count,
+        el('span', { class: 'mm-rest-unit', text: T.restUnit }),
+        el('p', { text: T.restBody }),
+        el('div', { class: 'mm-rest-bar' }, [bar]),
+      ]),
+    ]);
+    app.appendChild(backdrop);
+    requestAnimationFrame(() => backdrop.setAttribute('data-in', '1'));
+
+    const started = Date.now();
+    const tick = () => {
+      const left = Math.max(0, ms - (Date.now() - started));
+      count.textContent = String(Math.ceil(left / 1000));
+      bar.style.transform = `scaleX(${left / ms})`;
+    };
+    tick();
+    const timer = setInterval(tick, 250);
+
+    await sleep(ms);
+    clearInterval(timer);
+    backdrop.removeAttribute('data-in');
+    await sleep(240);
+    backdrop.remove();
+  }
 
   /* ------------------------------------------------------------ teardown */
 
@@ -1324,10 +1447,7 @@
       await sleep(rand(600, 1400));
 
       if (pages % 6 === 0) {
-        const wait = rand(8000, 14000);
-        toast(T.cooldown(Math.round(wait / 1000)), wait);
-        await sleep(wait);
-        hideToast();
+        await rest(rand(8000, 14000));
       }
     }
 
