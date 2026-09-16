@@ -124,3 +124,7 @@ node build.mjs
 [@19rl96](https://www.instagram.com/19rl96/)
 
 MIT ლიცენზია — იხილეთ [LICENSE](./LICENSE).
+
+---
+
+<3 ლავ იუ
